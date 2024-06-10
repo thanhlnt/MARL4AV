@@ -8,7 +8,7 @@ breed [cars car]
 globals [
   selected-car          ; the currently selected car
   nb-cars-max           ; maximum number of car
-  car-id                ;
+  id-count                ; temp value to set id for cars
 
   nb-lanes              ; number of lanes for two-way
   lanes                 ; a list of the y coordinates of different lanes
@@ -53,9 +53,9 @@ globals [
 cars-own [
   speed                       ; the current speed of the car
   speed-top                   ; the maximum speed of the car (different for all cars)
-  target-lane                 ; the desired lane of the car
   patience                    ; the driver's max number of patience
-  patience-current            ; the driver's max number of patience
+  patience-top                ; the driver's max number of patience
+  target-lane                 ; the desired lane of the car
   damaged-duration-inlane     ; the duration that a damaged car is in running lanes
   damaged-duration-inrescue   ; the duration that a damaged car is in rescue lanes
 
@@ -74,7 +74,7 @@ to setup
 
   set nb-lanes (nb-lanes-oneway * 2 + 3)
   set nb-cars-max round (nb-lanes-oneway * 2 * world-width * 0.25)
-  set car-id 0
+  set id-count 0
 
   set speed-max 1.0 ; ~ 100 km/h
   set speed-min 0.0 ; ~ 60 km/h
@@ -225,7 +225,7 @@ to setup-tabular-algos
     [-> round (get-distance get-ahead)]
     [-> round (100 * get-speed get-ahead)])
 
-  let state-size  (max-patience + 1) * 101 * world-width * 101; speed: 0 -> 100 -- distance: 0 - world-width -- speed-car-ahead: 0 -> 100
+  let state-size  (patience-max + 1) * 101 * world-width * 101; speed: 0 -> 100 -- distance: 0 - world-width -- speed-car-ahead: 0 -> 100
   py:set "state_size" state-size
 
   if (driving-policy = "SARSA") or (driving-policy = "Q-Learning") [
@@ -1095,7 +1095,7 @@ to-report get-reward ; car procedure
     ; if having a hard-brake: -10
   ]
 
-  report speed + (patience - patience-current) / patience ; reward can be positive or negative
+  report speed + (patience-top - patience) / patience-top
 
   ;report (log (speed + 1e-8) 2) + (log ((patience - patience-current) / patience + 1e-8) 2) ; reward can be positive or negative
 end
@@ -1105,16 +1105,19 @@ end
 to move-forward-gd ; car procedure
   ifelse speed > 0 [ ; for car with speed > 0
     ifelse (prob-damaged-car < random-float 1) [
-      ;ifelse ycor != target-lane [  ; commented 30/05/2024
+      ;ifelse ycor != target-lane [
       ;  change-lane ; move to target lane
       ;][
-        if (pycor < 0) [ set heading 90 ]
-        if (pycor > 0) [ set heading 270 ]
+        ;if (pycor < 0) [ set heading 90 ]
+        ;if (pycor > 0) [ set heading 270 ]
 
         ;set color get-default-color self
         handle-running-car
 
-        if patience-current <= 0  [ choose-new-lane ]  ; want to change lane
+        if patience <= 0  [
+          choose-new-lane
+          change-lane ; move to target lane
+        ]  ; want to change lane
       ;]
     ][
       if (damaged-nb-cars-inlane < max-damaged-cars) [ ; this car will stop
@@ -1141,7 +1144,7 @@ to handle-blocking-car-running [blocking-car]
   let d get-distance blocking-car
   ifelse d < collision-distance [
       ;print (word "collission: " self)
-      set color gray
+      set color orange + 2
       set nb-collisions nb-collisions + 1
   ][
     ifelse d < hard-brake-distance [
@@ -1231,18 +1234,20 @@ to handle-damaged-car ; car procedure
   ]
 end
 
-;; decrease the value of speed and patience
-;; slow down smoothly
+;; slow down smoothly: decrease the value of speed and patience
 to slow-down ; car procedure
   set color yellow
   if speed > deceleration [
     set speed (speed - deceleration)
     if speed < speed-min [ set speed speed-min ]
-    set patience-current patience-current - 2 ; every time you hit the brakes, you loose a little patience
-    if patience-current < 0 [set patience-current 0]
 
-    forward speed * speed-ratio
+    if patience > 0 [
+      set patience patience - 1 ; every time you hit the brakes, you loose a little patience
+    ]
   ]
+
+  forward speed * speed-ratio
+
 end
 
 ;; hard brake in danger situations
@@ -1250,22 +1255,24 @@ to hard-brake ; car procedure
   set color orange + 1
   if speed > 0 [
     set speed hard-brake-speed
-    set patience-current patience-current - 5 ; every time you hit the brakes, you loose a little patience
-    if patience-current < 0 [set patience-current 0]
-    forward speed * speed-ratio
+    set patience patience - 5 ; every time you hit the brakes, you loose a little patience
+    if patience < 0 [set patience 0]
   ]
+
+  forward speed * speed-ratio
 end
 
-;; increase the value of speed and patience
-;; speed-up smoothly
+;; speed-up smoothly: increase the value of speed and patience
 to speed-up ; car procedure
   set color green
   set speed (speed + acceleration)
   if speed > speed-top [ set speed speed-top ]
-  if speed > speed-top / 2 [set target-lane ycor]
 
   set patience patience + 1
-  if patience > max-patience [set patience max-patience]
+  if patience > patience-top [
+    set patience patience-top
+    set target-lane ycor
+  ]
 
   forward speed * speed-ratio
 end
@@ -1281,14 +1288,14 @@ to choose-new-lane ; car procedure
     let min-dist min map [ y -> abs (y - ycor) ] other-lanes
     let closest-lanes filter [ y -> abs (y - ycor) = min-dist ] other-lanes
     set target-lane one-of closest-lanes
-    set patience-current patience
+    set patience patience-top
   ]
   ;if target-lane = 0 [print ( word "choose-new-lane: target-lane = 0 !" )]
 end
 
 ; move to the target lane, need slow down
-to change-lanes ; car procedure
-  set color blue
+to change-lane ; car procedure
+  set color blue + 1
   ifelse (pycor < 0) [
     set heading ifelse-value target-lane < ycor [ 135 ] [ 45 ]
   ][
@@ -1305,19 +1312,16 @@ to change-lanes ; car procedure
     ; slow down if the car blocking us is behind, otherwise speed up
     ifelse towards blocking-car-nearest < 180 [ slow-down ] [ speed-up ]
   ]
-  set color get-default-color self
-  if (pycor < 0) [ set heading 90 ]
-  if (pycor > 0) [ set heading 270 ]
+  ;set color get-default-color self
+  ;if (pycor < 0) [ set heading 90 ]
+  ;if (pycor > 0) [ set heading 270 ]
 
   ;if ycor = 0 [print ( word "move-car-to-target-lane: current lane = 0 !" )]
   ;print (word "change lane: " self)
 end
 
-to change-lane
-end
 
-;; 28/08/2023
-;; calculate accelartion according IDM (Intelligent Driver Model)
+;; calculate accelartion according IDM (Intelligent Driver Model) added 28/08/2023
 to-report cal-accele-idm
   report 0
 end
@@ -1358,16 +1362,16 @@ to create-or-remove-cars
     ]
     set speed car-speed-seed + random-float (speed-max - car-speed-seed)
     set speed-top  speed-max ;(2 * speed + random-float (speed-max - 2 * speed)) ;(speed-max / 2) + random-float (speed-max / 2)
-    set patience (max-patience / 2) + random (max-patience / 2)
-    set patience-current patience
+    set patience-top (patience-max / 2) + random (patience-max / 2)
+    set patience patience-top
     set damaged-duration-inlane 0
     set damaged-duration-inrescue 0
     set action -1
     set reward 0
 
     set init-xcor pxcor
-    set id car-id
-    set car-id car-id + 1
+    set id id-count
+    set id-count id-count + 1
   ]
 
   if count cars > nb-cars [
@@ -1539,14 +1543,22 @@ to-report get-ahead
   if here != nobody [ report here ]
 
   let d 1
+  ;let nb-cars-ahead 0
   while [ d < observation-max ]
   [
-    set here min-one-of cars-on patch-ahead d [ distance myself ]
-    ifelse here != nobody [
-      report here
+    ;set nb-cars-ahead count cars-on patch-ahead d
+    ifelse cars-on patch-ahead d != nobody [
+      report min-one-of cars-on patch-ahead d [ distance myself ]
     ][
       set d (d + 1)
     ]
+    ;set here min-one-of cars-on patch-ahead d [ distance myself ]
+
+    ;ifelse here != nobody [
+    ;  report here
+    ;][
+    ;  set d (d + 1)
+    ;]
   ]
 
   report nobody
@@ -1716,7 +1728,7 @@ nb-cars
 nb-cars
 1
 nb-cars-max
-104.0
+82.0
 1
 1
 NIL
@@ -1848,8 +1860,8 @@ SLIDER
 150
 125
 183
-max-patience
-max-patience
+patience-max
+patience-max
 10
 100
 50.0
