@@ -1195,7 +1195,8 @@ to move-to-target-lane ; car procedure
   ifelse blocking-car-nearest = nobody [
     forward change-lane-step
     if get-distance-to-car get-car-ahead-same-lane <= collision-distance [
-      set color orange + 2
+      ;set color orange + 2
+      print (word "collision: " self get-car-ahead-same-lane)
       set nb-collisions nb-collisions + 1
     ]
     if (precision ycor 1 != 0) [set ycor precision ycor 1] ; to avoid floating point errors
@@ -1302,21 +1303,33 @@ end
 
 ;; report the car ahead that blocks this car in the same lane
 to-report get-car-ahead-same-lane
-  let here min-one-of cars-here with [ xcor > [ xcor ] of myself ] [ distance myself ]
-  ifelse here != nobody [
-    report here
-  ][
-    let i 1
-    while [ i < observation-max ]
-    [
-      ifelse (cars-on patch-ahead i) != nobody [
-        report min-one-of cars-on patch-ahead i [ distance myself ]
-      ][
-        set i (i + 1)
-      ]
+  ;let here min-one-of cars-here with [ xcor > [ xcor ] of myself ] [ distance myself ]
+  ;ifelse here != nobody [
+  ;  report here
+  ;][
+  ;  let i 1
+  ;  while [ i < observation-max ]
+  ;  [
+  ;    ifelse (cars-on patch-ahead i) != nobody [
+  ;      report min-one-of cars-on patch-ahead i [ distance myself ]
+  ;    ][
+  ;      set i (i + 1)
+  ;    ]
+  ;  ]
+  ;  report nobody
+  ;]
+  let i 1
+  while [ i < observation-max ]
+  [
+    let blocking-cars other cars in-cone i 30 with [ get-y-distance <= 1 ]
+    let blocking-car min-one-of blocking-cars [ distance myself ]
+    ifelse blocking-car != nobody [
+      report blocking-car
+    ][
+      set i (i + 1)
     ]
-    report nobody
   ]
+  report nobody
 end
 
 ;; report the car behind that blocks this car in the same lane
@@ -1460,7 +1473,7 @@ number-of-cars
 number-of-cars
 1
 nb-cars-max
-114.0
+89.0
 1
 1
 NIL
