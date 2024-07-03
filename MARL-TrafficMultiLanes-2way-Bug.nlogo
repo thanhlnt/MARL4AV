@@ -8,7 +8,7 @@ breed [cars car]
 globals [
   selected-car          ; the currently selected car
   nb-cars-max           ; maximum number of car
-  id-count                ; temp value to set id for cars
+  id-count              ; temp value to set id for cars
 
   nb-lanes              ; number of lanes for two-way
   lanes                 ; a list of the y coordinates of different lanes
@@ -76,8 +76,8 @@ to setup
   set nb-cars-max round (nb-lanes-oneway * 2 * world-width * 0.25)
   set id-count 0
 
-  set speed-max 1.0 ; ~ 100 km/h
-  set speed-min 0.0 ; ~ 60 km/h
+  set speed-max 1.0 ; ~ 120 km/h
+  set speed-min 0.0 ;
   set speed-ratio 0.35 ; need to recalculate
 
   set hard-brake-speed 0.02
@@ -90,8 +90,8 @@ to setup
   set damaged-max-duration-inrescue 1800 ; 3600 ~ 45 minutes
   set damaged-nb-cars-inlane 0
 
-  set speed-change-lane 0.06
-  set move-rescue-lane-step 0.06 ;speed-change-lane * 0.1
+  set speed-change-lane 0.08
+  set move-rescue-lane-step speed-change-lane * 0.1 ;0.06
 
   set prob-damaged-car 0.00002
   set prob-add-car 0.002
@@ -1721,7 +1721,7 @@ nb-cars
 nb-cars
 1
 nb-cars-max
-67.0
+96.0
 1
 1
 NIL

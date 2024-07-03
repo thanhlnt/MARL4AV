@@ -7,18 +7,22 @@ breed [cars car]
 
 globals [
   selected-car          ; the currently selected car
+  nb-cars-max           ; maximum number of car
 
   number-of-lanes       ; number of lanes for two-way
   lanes                 ; a list of the y coordinates of different lanes
   car-lanes
   car-lanes-left        ; a list of the y coordinates of different lanes for cars (from left to right)
   car-lanes-right       ; a list of the y coordinates of different lanes for cars (from right to left)
-  ;rescue-lanes          ; a list of the y coordinates of rescue lanes
+  ;rescue-lanes         ; a list of the y coordinates of rescue lanes
 
   speed-max
   speed-min
   speed-sudden-stop     ; the speed that a car has when its car ahead is damaged
-  speed-ratio           ;
+  speed-ratio           ; the ratio to multiply with speed
+
+  collision-distance    ; the distance that can be considered as collission
+  nb-collisions         ; number of collisions
 
   damaged-color                 ; the color for damaged car
   damaged-inlane-duration-max   ; the maximum duration for a damaged car stand on running lanes
@@ -61,12 +65,14 @@ to setup
   clear-all
 
   set number-of-lanes (number-of-lanes-way * 2 + 3)
+  set nb-cars-max round (number-of-lanes-way * 1.5 * world-width * 0.25)
 
-  set speed-max 1.0 ;
+  set speed-max 1.0 ; ~ 120 km/h
   set speed-min 0.0 ;
   set speed-sudden-stop 0.05
   set speed-ratio 0.35 ; need to recalculate
 
+  set collision-distance  1.0
 
   set damaged-color orange
   set damaged-inlane-duration-max 1800 ; 30 minutes
@@ -78,11 +84,11 @@ to setup
 
   set prob-damaged-car 0.00002
   set prob-add-car 0.005
-  set prob-remove-car 0.001
+  set prob-remove-car 0.00005
 
   set observation-max world-width / 2
-  set observation-distance 2.75
-  set observation-angle 45
+  set observation-distance 2.5
+  set observation-angle 50 ;45
 
   set ac-update-steps 2000
 
@@ -128,10 +134,12 @@ to go
   if ticks >= simulation-time [stop]
 
   if dynamic-situation? [
-    if (random-float 1 <= prob-add-car) [
-      set number-of-cars (number-of-cars + random 2) ; add cars
+    if (random-float 1 <= prob-add-car) and (number-of-cars < nb-cars-max) [
+      set number-of-cars (number-of-cars + 1) ; add cars
     ]
   ]
+
+  set nb-collisions 0
 
   create-or-remove-cars
 
@@ -966,7 +974,7 @@ end
 ; handle blocking cars
 to handle-blocking-cars ; car procedure
   ;let blocking-y-cars other cars in-cone (observation-distance + speed) observation-angle with [ get-x-distance <= observation-distance ]
-  set observation-distance get-safe-distance
+  ;set observation-distance get-safe-distance
   let blocking-cars other cars in-cone observation-distance observation-angle
   let blocking-car-nearest min-one-of blocking-cars [ distance myself ]
   if blocking-car-nearest != nobody [
@@ -1059,7 +1067,7 @@ to create-or-remove-cars
   let car-speed-seed 0.75
 
   create-cars (number-of-cars - count cars) [
-    set size 0.9
+    set size 1.1 ;0.9
     set color get-car-default-color self
     move-to one-of free-car car-road-patches
     set target-lane pycor
@@ -1113,7 +1121,7 @@ to draw-road
     set pcolor green - 2.5 + random-float 0.25 ; median strip
   ]
   ;print (word "rescue-lanes: " rescue-lanes)
-  print (word "car-lanes: " car-lanes)
+  ;print (word "car-lanes: " car-lanes)
   ;print (word "car-lanes-right: " car-lanes-right)
   ;print (word "car-lanes-left: " car-lanes-left)
 
@@ -1181,11 +1189,15 @@ to move-to-target-lane ; car procedure
     if (pycor > 0) [ set heading ifelse-value target-lane < ycor [ 225 ] [ 315 ] ]
   ]
 
-  set observation-distance get-safe-distance
+  ;set observation-distance get-safe-distance
   let blocking-cars other cars in-cone (observation-distance + abs (ycor - target-lane)) observation-angle with [ get-y-distance <= observation-distance ]
   let blocking-car-nearest min-one-of blocking-cars [ distance myself ]
   ifelse blocking-car-nearest = nobody [
     forward change-lane-step
+    if get-distance-to-car get-car-ahead-same-lane <= collision-distance [
+      set color orange + 2
+      set nb-collisions nb-collisions + 1
+    ]
     if (precision ycor 1 != 0) [set ycor precision ycor 1] ; to avoid floating point errors
   ][
     ; slow down if the car blocking us is behind, otherwise speed up
@@ -1235,15 +1247,15 @@ end
 ; if 120km >= speed > 100km/h then safe distance is 100m
 to-report get-safe-distance ; car procedure
   ifelse speed <= 0.6 [
-    report 35 / (2 * patch-size)
+    report 35 / patch-size
   ][
     ifelse speed <= 0.8[
-      report 55 / (2 * patch-size)
+      report 55 / patch-size
     ][
       ifelse speed <= 1.0[
-        report 70 / (2 * patch-size)
+        report 70 / patch-size
       ][
-        report 100 / (2 * patch-size)
+        report 100 / patch-size
       ]
     ]
   ]
@@ -1429,10 +1441,10 @@ NIL
 0
 
 MONITOR
-1485
-485
-1595
-530
+250
+690
+360
+735
 average speed
 (mean [speed] of cars with [speed > 0]) * 100
 2
@@ -1447,18 +1459,18 @@ SLIDER
 number-of-cars
 number-of-cars
 1
-(number-of-lanes - 2) * world-width
-75.0
+nb-cars-max
+114.0
 1
 1
 NIL
 HORIZONTAL
 
 PLOT
-1485
-55
-1880
-265
+250
+740
+645
+950
 Speed of Cars
 Time
 Speed
@@ -1470,9 +1482,9 @@ true
 true
 "" ""
 PENS
-"average" 1.0 0 -2674135 true "" "plot mean [ speed ] of cars with [speed > 0]"
-"max" 1.0 0 -10899396 true "" "plot max [ speed ] of cars with [speed > 0]"
-"min" 1.0 0 -13345367 true "" "plot min [ speed ] of cars with [speed > 0]"
+"average" 1.0 0 -13840069 true "" "plot mean [ speed ] of cars with [speed > 0]"
+"max" 1.0 0 -955883 true "" "plot max [ speed ] of cars with [speed > 0]"
+"min" 1.0 0 -1184463 true "" "plot min [ speed ] of cars with [speed > 0]"
 
 SLIDER
 5
@@ -1505,10 +1517,10 @@ NIL
 HORIZONTAL
 
 PLOT
-640
-690
-1045
-895
+1485
+105
+1890
+310
 Driver's Patience for Cars
 Time
 Patience
@@ -1520,9 +1532,9 @@ true
 true
 "set-plot-y-range 0 max-patience" ""
 PENS
-"average" 1.0 0 -2674135 true "" "plot mean [ patience ] of cars"
-"max" 1.0 0 -10899396 true "" "plot max [ patience ] of cars"
-"min" 1.0 0 -13345367 true "" "plot min [ patience ] of cars"
+"average" 1.0 0 -14439633 true "" "plot mean [ patience ] of cars"
+"max" 1.0 0 -955883 true "" "plot max [ patience ] of cars"
+"min" 1.0 0 -1184463 true "" "plot min [ patience ] of cars"
 
 BUTTON
 930
@@ -1576,10 +1588,10 @@ NIL
 0
 
 PLOT
-250
-690
-635
-895
+1485
+320
+1890
+525
 Vehicles Per Lane
 Time
 Cars
@@ -1693,10 +1705,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-1485
-535
-1595
-580
+1365
+690
+1475
+735
 exploration rate
 get-epsilon
 2
@@ -1704,10 +1716,10 @@ get-epsilon
 11
 
 PLOT
-1050
-690
-1475
-895
+665
+740
+1075
+950
 Selected Actions for Cars
 Time
 # Cars
@@ -1725,10 +1737,10 @@ PENS
 "change lane" 1.0 2 -13345367 true "" "plot count cars with [ action = 3 ]"
 
 PLOT
-1485
-270
-1880
-480
+1080
+740
+1475
+950
 Total Reward of Cars
 Time
 Reward
@@ -1743,10 +1755,10 @@ PENS
 "reward" 1.0 0 -2674135 true "" "plot sum [reward] of cars"
 
 MONITOR
-1600
-535
-1705
-580
+1080
+690
+1185
+735
 total reward
 sum [reward] of cars
 2
@@ -1754,10 +1766,10 @@ sum [reward] of cars
 11
 
 MONITOR
-1600
-485
-1705
-530
+1485
+55
+1590
+100
 average patience
 mean [ patience ] of cars
 2
@@ -1765,54 +1777,54 @@ mean [ patience ] of cars
 11
 
 MONITOR
-1485
-585
-1660
-630
-% accelerated action
+665
+690
+745
+735
+% accelerate
 (count cars with [ action = 0 ]) / number-of-cars * 100
 2
 1
 11
 
 MONITOR
-1665
-585
-1825
-630
-% decelerated action
+770
+690
+850
+735
+% decelerate
 (count cars with [ action = 2 ]) / number-of-cars * 100
 2
 1
 11
 
 MONITOR
-1485
-635
-1660
-680
-% stay-same action
+885
+690
+965
+735
+% stay same
 (count cars with [ action = 1 ]) / number-of-cars * 100
 2
 1
 11
 
 MONITOR
-1665
-635
-1825
-680
-% change-lane action
+990
+690
+1075
+735
+% change lane
 (count cars with [ action = 3 ]) / number-of-cars * 100
 2
 1
 11
 
 MONITOR
-1710
-485
-1825
 530
+690
+645
+735
 damaged cars
 count cars with [speed = 0]
 2
@@ -1895,7 +1907,7 @@ simulation-time
 simulation-time
 10000
 100000
-50000.0
+100000.0
 1000
 1
 NIL
@@ -1968,6 +1980,35 @@ dynamic-situation?
 0
 1
 -1000
+
+MONITOR
+1485
+540
+1557
+585
+# collisions
+nb-collisions
+17
+1
+11
+
+PLOT
+1485
+590
+1885
+770
+Number of Collisions
+Time
+# collisions
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"collisions" 1.0 0 -2674135 true "" "plot nb-collisions"
 
 @#$#@#$#@
 ## WHAT IS IT?
