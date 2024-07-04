@@ -88,7 +88,7 @@ to setup
 
   set observation-max world-width / 2
   set observation-distance 2.5
-  set observation-angle 50 ;45
+  set observation-angle 60 ;45
 
   set ac-update-steps 2000
 
@@ -196,8 +196,8 @@ to setup-tabular-algos
   set state-env (list
     [-> patience]
     [-> round (100 * speed)]
-    [-> round (get-distance-to-car get-car-ahead-same-lane)]
-    [-> round (100 * get-speed-to-car get-car-ahead-same-lane)])
+    [-> round (get-distance-to-car get-car-ahead)]
+    [-> round (100 * get-speed-to-car get-car-ahead)])
 
   let state-size  (max-patience + 1) * 101 * world-width * 101; speed: 0 -> 100 -- distance: 0 - world-width -- speed-car-ahead: 0 -> 100
   py:set "state_size" state-size
@@ -218,10 +218,10 @@ end
 to setup-approximate-algos
   set state-env (list
     [-> speed]
-    [-> get-distance-to-car get-car-ahead-same-lane]
-    [-> get-speed-to-car get-car-ahead-same-lane]
-    [-> get-distance-to-car get-car-behind-same-lane]
-    [-> get-speed-to-car get-car-behind-same-lane])
+    [-> get-distance-to-car get-car-ahead]
+    [-> get-speed-to-car get-car-ahead]
+    [-> get-distance-to-car get-car-behind]
+    [-> get-speed-to-car get-car-behind])
 
   if input-exp? [
     set state-env lput [-> get-epsilon ] state-env
@@ -271,10 +271,10 @@ end
 to setup-actor-critic-algos
   set state-env (list
     [-> speed]
-    [-> get-distance-to-car get-car-ahead-same-lane]
-    [-> get-speed-to-car get-car-ahead-same-lane]
-    [-> get-distance-to-car get-car-behind-same-lane]
-    [-> get-speed-to-car get-car-behind-same-lane])
+    [-> get-distance-to-car get-car-ahead]
+    [-> get-speed-to-car get-car-ahead]
+    [-> get-distance-to-car get-car-behind]
+    [-> get-speed-to-car get-car-behind])
 
   if input-exp? [
     set state-env lput [-> get-epsilon ] state-env
@@ -396,10 +396,10 @@ end
 to setup-ppo
   set state-env (list
     [-> speed]
-    [-> get-distance-to-car get-car-ahead-same-lane]
-    [-> get-speed-to-car get-car-ahead-same-lane]
-    [-> get-distance-to-car get-car-behind-same-lane]
-    [-> get-speed-to-car get-car-behind-same-lane])
+    [-> get-distance-to-car get-car-ahead]
+    [-> get-speed-to-car get-car-ahead]
+    [-> get-distance-to-car get-car-behind]
+    [-> get-speed-to-car get-car-behind])
 
   if input-exp? [
     set state-env lput [-> get-epsilon ] state-env
@@ -1012,6 +1012,8 @@ to handle-damaged-car ; car procedure
           set damaged-inlane-duration 0
           set damaged-inrescue-duration 1
           set damaged-nb-cars-inlane (damaged-nb-cars-inlane - 1)
+          ifelse (ycor <= 1 - number-of-lanes) [set heading 90][set heading 270]
+
         ]
       ]
     ][
@@ -1067,15 +1069,14 @@ to create-or-remove-cars
   let car-speed-seed 0.75
 
   create-cars (number-of-cars - count cars) [
-    set size 1.1 ;0.9
+    set size 1.0 ;0.9
     set color get-car-default-color self
     move-to one-of free-car car-road-patches
     set target-lane pycor
+    set shape "car-top"
     ifelse (member? pycor car-lanes-left) [
-      set shape "car-left"
       set heading 90
     ][
-      set shape "car-right"
       set heading 270
     ]
     set speed car-speed-seed + random-float (speed-max - car-speed-seed)
@@ -1194,9 +1195,9 @@ to move-to-target-lane ; car procedure
   let blocking-car-nearest min-one-of blocking-cars [ distance myself ]
   ifelse blocking-car-nearest = nobody [
     forward change-lane-step
-    if get-distance-to-car get-car-ahead-same-lane <= collision-distance [
+    if get-distance-to-car get-car-ahead <= collision-distance [
       ;set color orange + 2
-      print (word "collision: " self get-car-ahead-same-lane)
+      print (word "collision: " self get-car-ahead)
       set nb-collisions nb-collisions + 1
     ]
     if (precision ycor 1 != 0) [set ycor precision ycor 1] ; to avoid floating point errors
@@ -1302,24 +1303,23 @@ to-report get-blocking-car
 end
 
 ;; report the car ahead that blocks this car in the same lane
-to-report get-car-ahead-same-lane
-  ;let here min-one-of cars-here with [ xcor > [ xcor ] of myself ] [ distance myself ]
-  ;ifelse here != nobody [
-  ;  report here
-  ;][
-  ;  let i 1
-  ;  while [ i < observation-max ]
-  ;  [
-  ;    ifelse (cars-on patch-ahead i) != nobody [
-  ;      report min-one-of cars-on patch-ahead i [ distance myself ]
-  ;    ][
-  ;      set i (i + 1)
-  ;    ]
-  ;  ]
-  ;  report nobody
-  ;]
+to-report get-ahead
   let i 1
   while [ i < observation-max ]
+  [
+    ifelse (not any? cars-on patch-ahead i) [ ; patch-at-heading-and-distance -90 i
+      set i (i + 1)
+    ][
+      report min-one-of cars-on patch-ahead i [ distance myself ]
+    ]
+  ]
+  report nobody
+end
+
+;; another version of getting car ahead
+to-report get-car-ahead
+  let i 0
+  while [ i <= observation-max ]
   [
     let blocking-cars other cars in-cone i 30 with [ get-y-distance <= 1 ]
     let blocking-car min-one-of blocking-cars [ distance myself ]
@@ -1333,30 +1333,24 @@ to-report get-car-ahead-same-lane
 end
 
 ;; report the car behind that blocks this car in the same lane
-to-report get-car-behind-same-lane
-  let here min-one-of cars-here with [ xcor < [ xcor ] of myself ] [ distance myself ]
-  ifelse here != nobody [
-    report here
-  ][
-    let i 1
-    while [ i < observation-max ]
-    [
-      ifelse (cars-on patch-ahead (0 - i)) != nobody [
-        report min-one-of cars-on patch-ahead (0 - i) [ distance myself ]
-      ][
-        set i (i + 1)
-      ]
+to-report get-car-behind
+  ;report min-one-of cars-here with [ xcor < [ xcor ] of myself ] [ distance myself ]
+  ;ifelse here != nobody [
+  ;  report here
+  ;][
+  let i 1
+  while [ i < observation-max ]
+  [
+    ifelse (not any? cars-on patch-ahead (0 - i)) [ ; patch-at-heading-and-distance -90 i
+      set i (i + 1)
+    ][
+      report min-one-of cars-on patch-ahead (0 - i) [ distance myself ]
     ]
-    report nobody
   ]
-end
+  report nobody
+  ;]
 
-;to-report get-number-of-lanes
-  ; To make the number of lanes easily adjustable, remove this
-  ; reporter and create a slider on the interface with the same
-  ; name. 8 lanes is the maximum that currently fit in the view.
-;  report 3
-;end
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 250
@@ -1473,7 +1467,7 @@ number-of-cars
 number-of-cars
 1
 nb-cars-max
-89.0
+114.0
 1
 1
 NIL
@@ -2214,6 +2208,21 @@ Circle -16777216 true false 180 180 90
 Polygon -16777216 true false 138 80 168 78 166 135 91 135 106 105 111 96 120 89
 Circle -7500403 true true 195 195 58
 Circle -7500403 true true 47 195 58
+
+car-top
+true
+0
+Polygon -7500403 true true 151 8 119 10 98 25 86 48 82 225 90 270 105 289 150 294 195 291 210 270 219 225 214 47 201 24 181 11
+Polygon -16777216 true false 210 195 195 210 195 135 210 105
+Polygon -16777216 true false 105 255 120 270 180 270 195 255 195 225 105 225
+Polygon -16777216 true false 90 195 105 210 105 135 90 105
+Polygon -1 true false 205 29 180 30 181 11
+Line -7500403 true 210 165 195 165
+Line -7500403 true 90 165 105 165
+Polygon -16777216 true false 121 135 180 134 204 97 182 89 153 85 120 89 98 97
+Line -16777216 false 210 90 195 30
+Line -16777216 false 90 90 105 30
+Polygon -1 true false 95 29 120 30 119 11
 
 circle
 false
