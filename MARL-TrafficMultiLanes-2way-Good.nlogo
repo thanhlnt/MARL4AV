@@ -116,7 +116,7 @@ to setup
       setup-tabular-algos
     ]
 
-    if (driving-policy = "Deep Q-Learning") or (driving-policy = "Deep Q-Network") or (driving-policy = "Double Deep Q-Learning") [
+    if (driving-policy = "Deep Q-Learning") or (driving-policy = "Deep Q-Network") or (driving-policy = "Double Deep Q-Network") [
       setup-approximate-algos
     ]
 
@@ -157,7 +157,7 @@ to go
     go-double-ql
   ]
 
-  if (driving-policy = "Deep Q-Learning") or (driving-policy = "Deep Q-Network") or (driving-policy = "Double Deep Q-Learning") [
+  if (driving-policy = "Deep Q-Learning") or (driving-policy = "Deep Q-Network") or (driving-policy = "Double Deep Q-Network") [
     go-approximate-algos
   ]
 
@@ -239,10 +239,12 @@ to setup-approximate-algos
   py:set "batch_size" batch-size
 
   (py:run
+    "import tensorflow as tf"
+    "print('Tensorflow version: ', tf.__version__)"
+    "print('Num GPUs Available: ', len(tf.config.list_physical_devices('GPU')))"
     "from tensorflow import keras"
     "from keras import layers"
-    ;; Q Network
-
+    ; Q Network
     "Q_network = keras.Sequential()"
     "Q_network.add(layers.Dense(hidden_layer_size, input_shape=(input_state_size,), activation='relu'))"
     "Q_network.add(layers.Dense(hidden_layer_size, activation='relu'))"
@@ -1662,7 +1664,7 @@ CHOOSER
 driving-policy
 driving-policy
 "Greedy" "Greedy-CL" "-----------------------------------------------" "Nagel-Schreckenberg" "Intelligent-Driver-Model" "-----------------------------------------------" "Q-Learning" "SARSA" "Double Q-Learning" "Soft Q-Learning" "Implicit Q-Learning" "-----------------------------------------------" "Deep Q-Learning" "Deep Q-Network" "Double Deep Q-Learning" "Double Deep Q-Network" "Duel Deep Q-Network" "Prioritized ER DQN" "Deep Recurrent Q-Network" "-----------------------------------------------" "Reinforce" "Naive Actor-Critic" "Advantage Actor-Critic" "Asynchronous Advantage Actor-Critic" "Soft Actor-Critic" "-----------------------------------------------" "Proximal Policy Optimization" "Trust Region Policy Optimization" "Deep Deterministic Policy Gradient" "Twin Delayed Deep Deterministic Policy Gradient"
-6
+15
 
 SLIDER
 130

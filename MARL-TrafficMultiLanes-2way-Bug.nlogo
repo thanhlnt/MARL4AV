@@ -267,7 +267,7 @@ to setup-approximate-algos
     "from tensorflow import keras"
     "from keras import layers"
 
-    ;; Q Network
+    ; Q Network
     "Q_network = keras.Sequential()"
     "Q_network.add(layers.Dense(hidden_layer_size, input_shape=(input_state_size,), activation='relu'))"
     "Q_network.add(layers.Dense(hidden_layer_size, activation='relu'))"
