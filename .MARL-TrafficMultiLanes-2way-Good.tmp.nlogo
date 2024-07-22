@@ -611,31 +611,7 @@ to go-approximate-algos
     "targets = Q_network.predict(states)"
   )
 
-  if driving-policy = "Deep Q-Learning" [
-    py:run "q_values = np.max(Q_network.predict(next_states), axis = 1)" ; axis = 1 means to find max value along rows
-  ]
 
-  if driving-policy = "Deep Q-Network" [
-    py:run "q_values = np.max(Q_hat_network.predict(next_states), axis = 1)" ; axis = 1 means to find max value along rows
-  ]
-
-  if driving-policy = "Double Deep Q-Network"  [
-    (py:run
-      "next_targets = Q_network.predict(next_states)"
-      "best_next_actions = np.argmax(next_targets, axis=1)"
-      "next_targets_hat = Q_hat_network.predict(next_states)"
-      "q_values = next_targets_hat[np.arange(len(next_targets_hat)), best_next_actions]"
-    )
-  ]
-  py:run "targets[np.arange(targets.shape[0]), actions] = rewards + gamma*q_values"
-  py:run "Q_network.train_on_batch(states, targets)"
-
-  if (driving-policy = "Deep Q-Network") or
-     (driving-policy = "Double Deep Q-Network") [
-    (py:run
-      "step = step + 1"
-      "if (step % update_steps == 0): Q_hat_network = keras.models.clone_model(Q_network)")
-  ]
 end
 
 ;; go for Naive Actor-Critic
