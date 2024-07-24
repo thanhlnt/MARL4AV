@@ -625,7 +625,7 @@ to go-approximate-algos
     (py:run
       "next_targets = Q_network.predict(next_states, verbose=2)"
       "best_next_actions = np.argmax(next_targets, axis=1)"
-      "next_targets_hat = Q_hat_network.predict(next_states, verbose=2)"
+      "next_targets_hat = Q_hat_network.predict(next_states,)"
       "q_values = next_targets_hat[np.arange(len(next_targets_hat)), best_next_actions]"
     )
   ]
@@ -652,7 +652,7 @@ to go-nac
   ;py:run "print(np.array(states).shape)"
 
   ; using Actor network to choose actions, using e-greedy
-  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states), verbose=2), axis = 1)"
+  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states)), axis = 1)"
   (foreach car-list actions [ [t a] ->
     ask t [
       ifelse (0.05 + random-float 1) <= get-epsilon [
@@ -704,7 +704,7 @@ to go-sac
   py:set "states" map [ t -> [ state ] of t ] car-list
 
   ; using Actor network to choose actions, using e-greedy
-  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states), verbose=2), axis = 1)"
+  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states)), axis = 1)"
   (foreach car-list actions [ [t a] ->
     ask t [
       ifelse (0.05 + random-float 1) <= get-epsilon [
@@ -771,7 +771,7 @@ to go-a2c-without-workers
   py:set "states" map [ t -> [ state ] of t ] car-list
 
   ; using Actor network to choose actions, using e-greedy
-  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states), verbose=2), axis = 1)"
+  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states)), axis = 1)"
   (foreach car-list actions [ [t a] ->
     ask t [
       ifelse (0.05 + random-float 1) <= get-epsilon [
@@ -869,7 +869,7 @@ to go-ppo
   ;py:run "print(np.array(states).shape)"
 
   ; using Actor network to choose actions, using e-greedy
-  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states), verbose=2), axis = 1)"
+  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states)), axis = 1)"
   (foreach car-list actions [ [t a] ->
     ask t [
       ifelse (0.05 + random-float 1) <= get-epsilon [
