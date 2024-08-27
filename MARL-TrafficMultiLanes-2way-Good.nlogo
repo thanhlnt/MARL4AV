@@ -106,7 +106,10 @@ to setup
   ][
     ; use RL strategies
     py:setup py:python
-    py:run "import numpy as np"
+    (py:run
+      "import numpy as np"
+      "import os"
+      "os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'")
 
     py:set "action_size" 4   ; 0 = decelerate, 1 = stay same, 2 = accelerate, 3 = change lane
     py:set "gamma" discount-factor
@@ -240,10 +243,11 @@ to setup-approximate-algos
 
   (py:run
     "import tensorflow as tf"
-    "print('Tensorflow version: ', tf.__version__)"
-    "print('Num GPUs Available: ', len(tf.config.list_physical_devices('GPU')))"
+    ;"print('Tensorflow version: ', tf.__version__)"
+    ;"print('Num GPUs Available: ', len(tf.config.list_physical_devices('GPU')))"
     "from tensorflow import keras"
     "from keras import layers"
+    ;"from tensorflow.keras.optimizers import Adam"
     ; Q Network
     "Q_network = keras.Sequential()"
     "Q_network.add(layers.Dense(hidden_layer_size, input_shape=(input_state_size,), activation='relu'))"
@@ -1497,7 +1501,7 @@ number-of-cars
 number-of-cars
 1
 nb-cars-max
-114.0
+100.0
 1
 1
 NIL

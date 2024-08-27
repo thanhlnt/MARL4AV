@@ -106,7 +106,10 @@ to setup
   ][
     ; use RL strategies
     py:setup py:python
-    py:run "import numpy as np"
+    (py:run
+      "import numpy as np"
+      "import os"
+      "os.environ['TF_CPP_MIN_LOG_LEVEL'] = ''")
 
     py:set "action_size" 4   ; 0 = decelerate, 1 = stay same, 2 = accelerate, 3 = change lane
     py:set "gamma" discount-factor
@@ -240,10 +243,11 @@ to setup-approximate-algos
 
   (py:run
     "import tensorflow as tf"
-    "print('Tensorflow version: ', tf.__version__)"
-    "print('Num GPUs Available: ', len(tf.config.list_physical_devices('GPU')))"
+    ;"print('Tensorflow version: ', tf.__version__)"
+    ;"print('Num GPUs Available: ', len(tf.config.list_physical_devices('GPU')))"
     "from tensorflow import keras"
     "from keras import layers"
+    ;"from tensorflow.keras.optimizers import Adam"
     ; Q Network
     "Q_network = keras.Sequential()"
     "Q_network.add(layers.Dense(hidden_layer_size, input_shape=(input_state_size,), activation='relu'))"
@@ -625,7 +629,7 @@ to go-approximate-algos
     (py:run
       "next_targets = Q_network.predict(next_states, verbose=2)"
       "best_next_actions = np.argmax(next_targets, axis=1)"
-      "next_targets_hat = Q_hat_network.predict(next_states,)"
+      "next_targets_hat = Q_hat_network.predict(next_states, verbose=2)"
       "q_values = next_targets_hat[np.arange(len(next_targets_hat)), best_next_actions]"
     )
   ]
@@ -652,7 +656,7 @@ to go-nac
   ;py:run "print(np.array(states).shape)"
 
   ; using Actor network to choose actions, using e-greedy
-  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states)), axis = 1)"
+  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states), verbose=2), axis = 1)"
   (foreach car-list actions [ [t a] ->
     ask t [
       ifelse (0.05 + random-float 1) <= get-epsilon [
@@ -704,7 +708,7 @@ to go-sac
   py:set "states" map [ t -> [ state ] of t ] car-list
 
   ; using Actor network to choose actions, using e-greedy
-  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states)), axis = 1)"
+  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states), verbose=2), axis = 1)"
   (foreach car-list actions [ [t a] ->
     ask t [
       ifelse (0.05 + random-float 1) <= get-epsilon [
@@ -771,7 +775,7 @@ to go-a2c-without-workers
   py:set "states" map [ t -> [ state ] of t ] car-list
 
   ; using Actor network to choose actions, using e-greedy
-  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states)), axis = 1)"
+  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states), verbose=2), axis = 1)"
   (foreach car-list actions [ [t a] ->
     ask t [
       ifelse (0.05 + random-float 1) <= get-epsilon [
@@ -869,7 +873,7 @@ to go-ppo
   ;py:run "print(np.array(states).shape)"
 
   ; using Actor network to choose actions, using e-greedy
-  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states)), axis = 1)"
+  let actions py:runresult "np.argmax(Actor_network.predict(np.array(states), verbose=2), axis = 1)"
   (foreach car-list actions [ [t a] ->
     ask t [
       ifelse (0.05 + random-float 1) <= get-epsilon [
@@ -1497,7 +1501,7 @@ number-of-cars
 number-of-cars
 1
 nb-cars-max
-114.0
+100.0
 1
 1
 NIL
