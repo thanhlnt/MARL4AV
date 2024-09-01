@@ -1672,7 +1672,7 @@ CHOOSER
 150
 driving-policy
 driving-policy
-"Greedy" "Greedy-CL" "-----------------------------------------------" "Nagel-Schreckenberg" "Intelligent-Driver-Model" "-----------------------------------------------" "Q-Learning" "SARSA" "Double Q-Learning" "Soft Q-Learning" "Implicit Q-Learning" "-----------------------------------------------" "Deep Q-Learning" "Deep Q-Network" "Double Deep Q-Learning" "Double Deep Q-Network" "Duel Deep Q-Network" "Prioritized ER DQN" "Deep Recurrent Q-Network" "-----------------------------------------------" "Reinforce" "Naive Actor-Critic" "Advantage Actor-Critic" "Asynchronous Advantage Actor-Critic" "Soft Actor-Critic" "-----------------------------------------------" "Proximal Policy Optimization" "Trust Region Policy Optimization" "Deep Deterministic Policy Gradient" "Twin Delayed Deep Deterministic Policy Gradient"
+"Greedy" "Greedy-CL" "-----------------------------------------------" "Nagel-Schreckenberg" "Intelligent-Driver-Model" "-----------------------------------------------" "Q-Learning" "SARSA" "Double Q-Learning" "N-step Q-Learning" "N-step SARSA" "Soft Q-Learning" "Implicit Q-Learning" "-----------------------------------------------" "Deep Q-Learning" "Deep Q-Network" "Double Deep Q-Learning" "Double Deep Q-Network" "Duel Deep Q-Network" "Categorical DQN" "DuelingNet" "NoisyNet" "Prioritized Experience Replay" "Prioritized ER DQN" "Deep Recurrent Q-Network" "Rainbow" "----------------------Policy Gradient-------------------------" "Reinforce" "Naive Actor-Critic" "Advantage Actor-Critic" "Asynchronous Advantage Actor-Critic" "Soft Actor-Critic" "Proximal Policy Optimization" "Trust Region Policy Optimization" "Deep Deterministic Policy Gradient" "Twin Delayed Deep Deterministic Policy Gradient" "DDPG from Demonstration (DDPGfD)" "Behavior Cloning (with DDPG)"
 6
 
 SLIDER
@@ -2099,7 +2099,7 @@ CHOOSER
 100
 map
 map
-"two-way expressway"
+"Two-way Expressway" "One-way Expressway" "Roundabout" "T-intersection" "Intersection" "Urban"
 0
 
 @#$#@#$#@
