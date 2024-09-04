@@ -2099,7 +2099,7 @@ CHOOSER
 100
 map
 map
-"Two-way Expressway" "One-way Expressway" "Roundabout" "T-intersection" "Intersection" "Urban"
+"Two-way Expressway" "One-way Expressway" "Roundabout" "Ramp" "Fork" "T-intersection" "Intersection" "Urban"
 0
 
 @#$#@#$#@
