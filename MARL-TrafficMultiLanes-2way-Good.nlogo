@@ -61,7 +61,7 @@ cars-own [
   action         ; 0 = decelerate, 1 = stay same, 2 = accelerate, 3 = change lane
   next-state
 
-  policy ; each car might have different driving-policy
+  ; policy ; each car might have different driving-policy: "greedy" (social vehicles), "q-learning", "dqn", ...
 ]
 
 to setup
@@ -139,7 +139,7 @@ to setup
 end
 
 to go
-  if ticks >= simulation-time [
+  if ticks >= simulation-steps [
     print timer
     stop
   ]
@@ -1675,7 +1675,7 @@ CHOOSER
 driving-policy
 driving-policy
 "================Rule-based Policy================" "Greedy" "Greedy-CL" "-----------------------------------------------" "Nagel-Schreckenberg" "Intelligent-Driver-Model" "Mobile Policy" "================RL-based Policy==================" "Q-Learning" "SARSA" "Double Q-Learning" "N-step Q-Learning" "N-step SARSA" "Soft Q-Learning" "Implicit Q-Learning" "-----------------------------------------------" "Deep Q-Learning" "Deep Q-Network" "Double Deep Q-Learning" "Double Deep Q-Network" "Duel Deep Q-Network" "Categorical DQN" "DuelingNet" "NoisyNet" "Prioritized Experience Replay" "Prioritized ER DQN" "Deep Recurrent Q-Network" "Rainbow" "----------------------Policy Gradient-------------------------" "Reinforce" "Naive Actor-Critic" "Advantage Actor-Critic" "Asynchronous Advantage Actor-Critic" "Soft Actor-Critic" "Proximal Policy Optimization" "Trust Region Policy Optimization" "Deep Deterministic Policy Gradient" "Twin Delayed Deep Deterministic Policy Gradient" "DDPG from Demonstration (DDPGfD)" "Behavior Cloning (with DDPG)"
-1
+8
 
 SLIDER
 130
@@ -1951,10 +1951,10 @@ HORIZONTAL
 SLIDER
 5
 665
-175
+207
 698
-simulation-time
-simulation-time
+simulation-steps
+simulation-steps
 100
 100000
 1000.0
@@ -2555,7 +2555,7 @@ NetLogo 6.4.0
     <enumeratedValueSet variable="exp-decay">
       <value value="0.001"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="simulation-time">
+    <enumeratedValueSet variable="simulation-steps">
       <value value="100000"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="max-damaged-cars">
@@ -2610,7 +2610,7 @@ NetLogo 6.4.0
       <value value="0.0034"/>
     </enumeratedValueSet>
   </experiment>
-  <experiment name="q_learning_d1e-1" repetitions="5" runMetricsEveryStep="true">
+  <experiment name="q_learning_d1e-4" repetitions="5" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
@@ -2621,9 +2621,9 @@ NetLogo 6.4.0
       <value value="true"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="exp-decay">
-      <value value="0.1"/>
+      <value value="1.0E-4"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="simulation-time">
+    <enumeratedValueSet variable="simulation-steps">
       <value value="100000"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="max-damaged-cars">
@@ -2691,7 +2691,7 @@ NetLogo 6.4.0
     <enumeratedValueSet variable="exp-decay">
       <value value="1.0E-5"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="simulation-time">
+    <enumeratedValueSet variable="simulation-steps">
       <value value="100000"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="max-damaged-cars">
@@ -2759,7 +2759,7 @@ NetLogo 6.4.0
     <enumeratedValueSet variable="exp-decay">
       <value value="0"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="simulation-time">
+    <enumeratedValueSet variable="simulation-steps">
       <value value="100000"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="max-damaged-cars">
