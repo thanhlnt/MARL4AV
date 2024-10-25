@@ -1675,7 +1675,7 @@ CHOOSER
 driving-policy
 driving-policy
 "================Rule-based Policy================" "Greedy" "Greedy-CL" "-----------------------------------------------" "Nagel-Schreckenberg" "Intelligent-Driver-Model" "Mobile Policy" "================RL-based Policy==================" "Q-Learning" "SARSA" "Double Q-Learning" "N-step Q-Learning" "N-step SARSA" "Soft Q-Learning" "Implicit Q-Learning" "-----------------------------------------------" "Deep Q-Learning" "Deep Q-Network" "Double Deep Q-Learning" "Double Deep Q-Network" "Duel Deep Q-Network" "Categorical DQN" "DuelingNet" "NoisyNet" "Prioritized Experience Replay" "Prioritized ER DQN" "Deep Recurrent Q-Network" "Rainbow" "----------------------Policy Gradient-------------------------" "Reinforce" "Naive Actor-Critic" "Advantage Actor-Critic" "Asynchronous Advantage Actor-Critic" "Soft Actor-Critic" "Proximal Policy Optimization" "Trust Region Policy Optimization" "Deep Deterministic Policy Gradient" "Twin Delayed Deep Deterministic Policy Gradient" "DDPG from Demonstration (DDPGfD)" "Behavior Cloning (with DDPG)"
-8
+10
 
 SLIDER
 130
@@ -2099,8 +2099,8 @@ CHOOSER
 55
 245
 100
-map
-map
+scenario
+scenario
 "Two-way Expressway" "One-way Expressway" "Roundabout" "Ramp" "Fork" "T-intersection" "Intersection" "Urban"
 0
 
@@ -2794,6 +2794,822 @@ NetLogo 6.4.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="driving-policy">
       <value value="&quot;Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="q_learning_d5e-5" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="5.0E-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="q_learning_d3.33e-5" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="3.333333E-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="q_learning_d2.5e-5" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="2.5E-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="q_learning_d2.0e-5" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="2.0E-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="q_learning_d1.67e-5" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="1.666667E-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="q_learning_d1.43e-5" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="1.433333E-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="q_learning_d1.25e-5" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="1.25E-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="q_learning_d1.11e-5" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="1.111111E-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="double_q_learning_d1e-3" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="0.001"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Double Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="double_q_learning_d1e-4" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="1.0E-4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Double Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="double_q_learning_d1e-5" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="1.0E-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Double Q-Learning&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="double_q_learning_d0" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="100000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="128"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Double Q-Learning&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="memory-size">
       <value value="100000"/>
