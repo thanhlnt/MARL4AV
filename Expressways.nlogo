@@ -1675,7 +1675,7 @@ CHOOSER
 driving-policy
 driving-policy
 "================Rule-based Policy================" "Greedy" "Greedy-CL" "-----------------------------------------------" "Nagel-Schreckenberg" "Intelligent-Driver-Model" "Mobile Policy" "================RL-based Policy==================" "Q-Learning" "SARSA" "Double Q-Learning" "N-step Q-Learning" "N-step SARSA" "Soft Q-Learning" "Implicit Q-Learning" "-----------------------------------------------" "Deep Q-Learning" "Deep Q-Network" "Double Deep Q-Learning" "Double Deep Q-Network" "Duel Deep Q-Network" "Categorical DQN" "DuelingNet" "NoisyNet" "Prioritized Experience Replay" "Prioritized ER DQN" "Deep Recurrent Q-Network" "Rainbow" "----------------------Policy Gradient-------------------------" "Reinforce" "Naive Actor-Critic" "Advantage Actor-Critic" "Asynchronous Advantage Actor-Critic" "Soft Actor-Critic" "Proximal Policy Optimization" "Trust Region Policy Optimization" "Deep Deterministic Policy Gradient" "Twin Delayed Deep Deterministic Policy Gradient" "DDPG from Demonstration (DDPGfD)" "Behavior Cloning (with DDPG)"
-10
+17
 
 SLIDER
 130
@@ -1957,7 +1957,7 @@ simulation-steps
 simulation-steps
 100
 100000
-1000.0
+100000.0
 1000
 1
 NIL
