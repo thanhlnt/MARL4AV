@@ -4,15 +4,16 @@
  It is useful for researchers to study the traffic congestion reduction problem on highways or in urban areas. It can be used to test new RL algorithms.
 
  The 3D View interface of the testbed, for highways, is shown in following picture.
-<p align="center">
- <img src="https://github.com/user-attachments/assets/7bd1751e-66b0-4bd1-9968-5888a9cb6eb9" class="center" width="500" height="300">
-</p>
+<p align="center"> <img src="https://github.com/user-attachments/assets/7bd1751e-66b0-4bd1-9968-5888a9cb6eb9" class="center" width="500" height="300"> </p>
 
 **Features:** <br />
 The testbed has current following features:
 - Scenario: _Two-way expressways_. Other scenarios are planned for future development.
 - Driving-policy: _Greedy, Q-Learning, Double Q-Learning, SARSA, Deep Q-Network, Double Deep Q-Network_. Other driving-policies are planned for future development or under review.
- 
+
+The testbed has been tested with following configuration, especially for Deep RL algorithms <br />
+<p align="center"> <img src="https://github.com/user-attachments/assets/a42faf61-05fe-4b87-8503-0f535fd948c5" class="center" width="300" height="200"> </p>
+
  **References:**
  1. Jeremy, B., Bryan, H., James, H., Robert J., Aaron, B., Ewout ter Hoeven, Igor, N. (2017-2024). _Python extension of NetLogo_. https://github.com/NetLogo/Python-Extension
  2. Wilensky, U., Payette, N. (1998). _Traffic 2 lanes_. NetLogo Models Library http://ccl.northwestern.edu/netlogo/models/Traffic2Lanes
