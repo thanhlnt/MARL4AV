@@ -2,6 +2,8 @@
  
  The testbed is built on top of the NetLogo platform, version 6.4.0, and use Python extension to implement RL algorithms.
  It is useful for researchers to study the traffic congestion reduction problem on highways or in urban areas. It cand be used to test new RL algorithms.
+
+ The 3D View interface of the testbed, for highways, is shown as follows.
  ![View3D-4](https://github.com/user-attachments/assets/7bd1751e-66b0-4bd1-9968-5888a9cb6eb9)
 
  **References:**
