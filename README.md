@@ -7,6 +7,10 @@
 
  <img src="https://github.com/user-attachments/assets/7bd1751e-66b0-4bd1-9968-5888a9cb6eb9" class="center" width="500" height="300">
 
+**Features**
+The testbed has current following features:
+- Scenario: _Two-way expressways_. Other scenarios are planned for future development.
+- Driving-policy: _Greedy, Q-Learning, Double Q-Learning, SARSA, Deep Q-Network, Double Deep Q-Network_. Other driving-policies are planned for future development.
  
  **References:**
  1. Jeremy, B., Bryan, H., James, H., Robert J., Aaron, B., Ewout ter Hoeven, Igor, N. (2017-2024). _Python extension of NetLogo_. https://github.com/NetLogo/Python-Extension
