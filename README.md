@@ -8,7 +8,7 @@
 
 **Features:** <br />
 The testbed has current following features:
-- Scenario: _Two-way expressways_. Other scenarios are planned for future development.
+- Scenario: _Two-way expressways_. Other scenarios (urban, intersection, roundabout, ramp, ...) are planned for future development.
 - Driving-policy: _Greedy, Q-Learning, Double Q-Learning, SARSA, Deep Q-Network, Double Deep Q-Network_. Other driving-policies are planned for future development or under review.
 
 The testbed has been tested with following configuration, especially for Deep RL algorithms <br />
