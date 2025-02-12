@@ -4,8 +4,9 @@
  It is useful for researchers to study the traffic congestion reduction problem on highways or in urban areas. It can be used to test new RL algorithms.
 
  The 3D View interface of the testbed, for highways, is shown in following picture.
-
- <img src="https://github.com/user-attachments/assets/7bd1751e-66b0-4bd1-9968-5888a9cb6eb9" class="center" width="500" height="300"> <br />
+<p align="center">
+ <img src="https://github.com/user-attachments/assets/7bd1751e-66b0-4bd1-9968-5888a9cb6eb9" class="center" width="500" height="300">
+</p>
 
 **Features:** <br />
 The testbed has current following features:
