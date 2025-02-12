@@ -1,4 +1,4 @@
-# Multi-agent reinforcement learning for autonomous driving.
+# Multi-agent reinforcement learning for autonomous driving
  
  The testbed is built on top of the NetLogo platform, version 6.4.0, and use Python extension to implement RL algorithms.
  It is useful for researchers to study the traffic congestion reduction problem on highways or in urban areas. It can be used to test new RL algorithms.
