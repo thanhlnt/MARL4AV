@@ -1,17 +1,17 @@
 # Multi-agent reinforcement learning for autonomous driving
  
- The testbed is built on top of the NetLogo platform, version 6.4.0, and use Python extension to implement RL algorithms.
+ The testbed is built on the NetLogo platform, version 6.4.0, and uses Python extension to implement RL algorithms.
  It is useful for researchers to study the traffic congestion reduction problem on highways or in urban areas. It can be used to test new RL algorithms.
 
- The 3D View interface of the testbed, for highways, is shown in following picture.
+ The 3D View of the testbed, for highways, is shown in the following picture.
 <p align="center"> <img src="https://github.com/user-attachments/assets/7bd1751e-66b0-4bd1-9968-5888a9cb6eb9" class="center" width="500" height="300"> </p>
 
 **Features:** <br />
 The testbed has current following features:
 - Scenario: _Two-way expressways_. Other scenarios (urban, intersection, roundabout, ramp, ...) are planned for future development.
-- Driving-policy: _Greedy, Q-Learning, Double Q-Learning, SARSA, Deep Q-Network, Double Deep Q-Network_. Other RL driving-policies are planned for future development or under review.
+- Driving policy: _Greedy, Q-Learning, Double Q-Learning, SARSA, Deep Q-Network, Double Deep Q-Network_. Other RL driving policies are planned for future development or under review.
 
-The testbed has been tested with following configuration, especially for Deep RL algorithms <br />
+The testbed has been tested with the following configuration, especially for Deep RL algorithms <br />
 <p align="center"> <img src="https://github.com/user-attachments/assets/a42faf61-05fe-4b87-8503-0f535fd948c5" class="center" width="300" height="200"> </p>
 
  **References:**
