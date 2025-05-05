@@ -14,6 +14,9 @@ The testbed has current following features:
 The testbed has been tested with the following configuration, especially for Deep RL algorithms <br />
 <p align="center"> <img src="https://github.com/user-attachments/assets/a42faf61-05fe-4b87-8503-0f535fd948c5" class="center" width="300" height="200"> </p>
 
+Draft article
+https://drive.google.com/file/d/1LmN8ld_RFPThecegJLm0OtTMaT74nrCg/view?usp=drive_link
+
  **References:**
  1. Jeremy, B., Bryan, H., James, H., Robert J., Aaron, B., Ewout ter Hoeven, Igor, N. (2017-2024). _Python extension of NetLogo_. https://github.com/NetLogo/Python-Extension
  2. Wilensky, U., Payette, N. (1998). _Traffic 2 lanes_. NetLogo Models Library http://ccl.northwestern.edu/netlogo/models/Traffic2Lanes
