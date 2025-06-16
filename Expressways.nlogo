@@ -54,6 +54,11 @@ globals [
   step
   update-steps
   max-episode-length
+  training-frequency
+  replay-buffer-size
+  replay-buffer
+  sigma_0
+  warmup-steps
 ]
 
 ; define attributes for car agent
@@ -298,21 +303,22 @@ to setup-approximate-algos
 end
 to setup-rainbow
   set step 0
+  set training-frequency 1
+  set replay-buffer-size 0  ; Gán giá trị mặc định, nhưng sẽ sử dụng replay_buffer.size từ Python
+  set replay-buffer []
+  set sigma_0 0.5
+  set n-step 3
+  set num-atoms 51
+  set v-min -10
+  set v-max 10
+  set gamma 0.99
+  set hidden-layer-size 36
+  set memory-size 2000
+  set batch-size 32
+  set update-steps 1000
+  set observation-max 100
+  set warmup-steps 500
 
-  ;; === 1. Kiểm tra và khởi tạo các tham số ===
-  if not is-number? n-step [ set n-step 3 ]
-  if not is-number? num-atoms or num-atoms <= 0 [ set num-atoms 51 ]
-  if not is-number? v-min [ set v-min -200 ]
-  if not is-number? v-max [ set v-max 200 ]
-  if not is-number? gamma [ set gamma 0.98 ]
-  if not is-number? hidden-layer-size [ set hidden-layer-size 36 ]
-  if not is-number? memory-size [ set memory-size 100000 ]
-  if not is-number? batch-size [ set batch-size 16 ]
-  if not is-number? update-steps [ set update-steps 500 ]
-  if update-steps <= 0 [ set update-steps 500 ]
-  if not is-number? max-episode-length [ set max-episode-length 1000 ]
-
-  ;; === 2. Xây dựng trạng thái ===
   set state-env (list
     [-> speed]
     [-> get-distance-to-car get-car-ahead]
@@ -327,11 +333,10 @@ to setup-rainbow
   if is-boolean? input-time? and input-time? [
     set state-env lput [-> ticks] state-env
   ]
-  show (word "State environment size: " length state-env)
+  show (word "Kích thước môi trường trạng thái: " length state-env)
 
-  ;; === 3. Cấu hình hyperparameters ===
   py:set "input_state_size" length state-env
-  py:set "hidden_layer_size" hidden-layer-size  ; Fixed: Correct variable name
+  py:set "hidden_layer_size" hidden-layer-size
   py:set "memory_size" memory-size
   py:set "batch_size" batch-size
   py:set "n_step" n-step
@@ -340,11 +345,10 @@ to setup-rainbow
   py:set "num_atoms" num-atoms
   py:set "v_min" v-min
   py:set "v_max" v-max
-  py:set "alpha" 0.5
+  py:set "alpha" 0.6
   py:set "beta_start" 0.4
   py:set "update_steps" update-steps
 
-  ;; === 4. Cài đặt mô hình Rainbow DQN trong Python ===
   (py:run
     "import tensorflow as tf"
     "import numpy as np"
@@ -352,7 +356,6 @@ to setup-rainbow
     "from keras import layers"
 
     "tf.keras.backend.set_floatx('float32')"
-
     "delta_z = tf.cast((v_max - v_min) / (num_atoms - 1), tf.float32)"
     "support = tf.cast(tf.linspace(v_min, v_max, num_atoms), tf.float32)"
     "step = 0"
@@ -364,9 +367,9 @@ to setup-rainbow
     "    self.activation = keras.activations.get(activation)"
     "  def build(self, input_shape):"
     "    self.w_mu = self.add_weight(shape=(input_shape[-1], self.units), initializer='glorot_uniform')"
-    "    self.w_sigma = self.add_weight(shape=(input_shape[-1], self.units), initializer='zeros')"
+    "    self.w_sigma = self.add_weight(shape=(input_shape[-1], self.units), initializer=keras.initializers.Constant(0.017))"
     "    self.b_mu = self.add_weight(shape=(self.units,), initializer='zeros')"
-    "    self.b_sigma = self.add_weight(shape=(self.units,), initializer='zeros')"
+    "    self.b_sigma = self.add_weight(shape=(self.units,), initializer=keras.initializers.Constant(0.017))"
     "  def call(self, inputs, training=False):"
     "    noise_w = tf.random.normal(self.w_mu.shape)"
     "    noise_b = tf.random.normal(self.b_mu.shape)"
@@ -377,6 +380,7 @@ to setup-rainbow
     "def create_network():"
     "  inputs = keras.Input(shape=(input_state_size,))"
     "  x = NoisyDense(hidden_layer_size, activation='relu')(inputs)"
+    "  x = NoisyDense(hidden_layer_size, activation='relu')(x)"
     "  x = NoisyDense(hidden_layer_size, activation='relu')(x)"
     "  v = NoisyDense(num_atoms)(x)"
     "  v = layers.Reshape((1, num_atoms))(v)"
@@ -391,7 +395,7 @@ to setup-rainbow
     "Q2.set_weights(Q1.get_weights())"
 
     "class PrioritizedReplayBuffer:"
-    "  def __init__(self, capacity, alpha=0.5, beta_start=0.4, beta_frames=100000):"
+    "  def __init__(self, capacity, alpha=0.6, beta_start=0.4, beta_frames=100000):"
     "    self.capacity = capacity"
     "    self.alpha = alpha"
     "    self.beta_start = beta_start"
@@ -401,6 +405,12 @@ to setup-rainbow
     "    self.pos = 0"
     "    self.size = 0"
     "  def add(self, state, action, reward, next_state, done, n_step_reward=None):"
+    "    state = np.array(state, dtype=np.float32)"
+    "    next_state = np.array(next_state, dtype=np.float32)"
+    "    if not np.all(np.isfinite(state)) or not np.all(np.isfinite(next_state)):"
+    "      print(f'Trạng thái không hợp lệ: state={state}, next_state={next_state}')"
+    "      state = np.zeros(input_state_size, dtype=np.float32)"
+    "      next_state = np.zeros(input_state_size, dtype=np.float32)"
     "    max_priority = np.max(self.priorities) if self.buffer else 1.0"
     "    if len(self.buffer) < self.capacity:"
     "      self.buffer.append((state, action, reward, next_state, done, n_step_reward))"
@@ -410,6 +420,9 @@ to setup-rainbow
     "    self.pos = (self.pos + 1) % self.capacity"
     "    self.size = min(self.size + 1, self.capacity)"
     "  def sample(self, batch_size, step):"
+    "    if self.size < batch_size:"
+    "      print(f'Kích thước bộ đệm không đủ: {self.size}')"
+    "      return [], [], []"
     "    priorities = self.priorities[:self.size]"
     "    probs = priorities ** self.alpha"
     "    probs /= probs.sum()"
@@ -425,7 +438,7 @@ to setup-rainbow
 
     "replay_buffer = PrioritizedReplayBuffer(capacity=memory_size, alpha=alpha, beta_start=beta_start)"
 
-    "optimizer = keras.optimizers.Adam(learning_rate=0.0001, clipnorm=10.0)"
+    "optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)"
 
     "def add_experience(state, action, reward, next_state, done, n_step_reward=None):"
     "  state = np.array(state, dtype=np.float32)"
@@ -474,15 +487,15 @@ to setup-rainbow
     "    l_indices = tf.stack([tf.reshape(batch_indices_expanded, [-1]), tf.reshape(tf.cast(l, tf.int32), [-1])], axis=1)"
     "    u_indices = tf.stack([tf.reshape(batch_indices_expanded, [-1]), tf.reshape(tf.cast(u, tf.int32), [-1])], axis=1)"
     "    target_dist = tf.zeros_like(q_dist_selected)"
-    "    u_minus_b = u - b"
-    "    l_contrib = target_q_dist_selected * u_minus_b"
-    "    u_contrib = target_q_dist_selected * (b - l)"
+    "    is_integer = tf.equal(l, u)"
+    "    l_contrib = tf.where(is_integer, target_q_dist_selected, target_q_dist_selected * (u - b))"
+    "    u_contrib = tf.where(is_integer, tf.zeros_like(target_q_dist_selected), target_q_dist_selected * (b - l))"
     "    l_contrib = tf.reshape(l_contrib, [-1])"
     "    u_contrib = tf.reshape(u_contrib, [-1])"
     "    target_dist = tf.tensor_scatter_nd_add(target_dist, l_indices, l_contrib)"
     "    target_dist = tf.tensor_scatter_nd_add(target_dist, u_indices, u_contrib)"
     "    target_dist = tf.stop_gradient(target_dist)"
-    "    loss = -tf.reduce_sum(target_dist * tf.math.log(q_dist_selected), axis=1)"
+    "    loss = tf.keras.losses.categorical_crossentropy(target_dist, q_dist_selected, from_logits=False)"
     "    loss = tf.reduce_mean(loss * weights)"
     "  trainable_vars = Q1.trainable_variables"
     "  gradients = tape.gradient(loss, trainable_vars)"
@@ -492,11 +505,22 @@ to setup-rainbow
 
     "def train():"
     "  global step"
-    "  if replay_buffer.size < batch_size:"
-    "    return 0.0"
     "  samples, indices, weights = replay_buffer.sample(batch_size, step)"
+    "  if not samples:"
+    "    print('Kích thước bộ đệm không đủ:', replay_buffer.size)"
+    "    return 0.0"
     "  states, actions, rewards, next_states, dones, n_step_rewards = zip(*samples)"
+    "  states = np.array(states, dtype=np.float32)"
+    "  next_states = np.array(next_states, dtype=np.float32)"
+    "  for i, (state, next_state) in enumerate(zip(states, next_states)):"
+    "    if not np.all(np.isfinite(state)):"
+    "      print(f'Trạng thái không hợp lệ tại chỉ số {i}: {state}')"
+    "      states[i] = np.zeros(input_state_size, dtype=np.float32)"
+    "    if not np.all(np.isfinite(next_state)):"
+    "      print(f'Trạng thái tiếp theo không hợp lệ tại chỉ số {i}: {next_state}')"
+    "      next_states[i] = np.zeros(input_state_size, dtype=np.float32)"
     "  loss, priorities = compute_loss(states, actions, rewards, next_states, dones, weights, n_step_rewards)"
+    "  print('loss:', loss.numpy())"
     "  replay_buffer.update_priorities(indices, priorities.numpy() + 1e-6)"
     "  if update_steps > 0 and step % update_steps == 0:"
     "    Q2.set_weights(Q1.get_weights())"
@@ -504,8 +528,10 @@ to setup-rainbow
     "  return loss.numpy()"
   )
 
-  ;; === 5. Reset bộ đệm n-step ===
-  ask cars [ set n-step-buffer [] ]
+  ask cars [
+    set n-step-buffer []
+    set speed 1.0
+  ]
 end
 ;; setup for actor-critic algorithms (Naive AC, A2C without multiple workers, A2C with multiple workers, Soft Actor-Critic)
 ;; use neural networks: for Actor and for Critic
@@ -811,88 +837,123 @@ to go-double-ql
 end
 
 to go-rainbow
-  ;; 1. Thu thập trạng thái
+  ;; 1. Thu thập trạng thái cho các xe hoạt động
   ask cars with [speed > 0] [
-    set state map [f -> runresult f] state-env
+    set state map [f -> ifelse-value is-number? runresult f [runresult f] [0]] state-env
+    if not is-list? state [
+      show (word "Lỗi: Trạng thái không phải danh sách cho xe " who ": " state)
+      set state n-values length state-env [0]  ; Sửa thành độ dài động dựa trên state-env
+    ]
+    if length state != length state-env [
+      show (word "Lỗi: Kích thước trạng thái không khớp cho xe " who ": " length state " != " length state-env)
+      set state n-values length state-env [0]
+    ]
   ]
-  let active-cars cars with [speed > 0 and is-list? state]
-  show (word "Number of active cars: " count active-cars)
-  if not any? active-cars [ stop ]
+  let active-cars cars with [speed > 0 and is-list? state and length state = length state-env]
+  if not any? active-cars [
+    show "Không có xe hoạt động, dừng mô phỏng."
+    stop
+  ]
 
-  ;; 2. Dự đoán hành động từ Q1
-  let states map [c -> [state] of c] [self] of active-cars
+  ;; 2. Dự đoán hành động từ mô hình Q1
+  let active-cars-list sort active-cars
+  let states map [c -> [state] of c] active-cars-list
   py:set "states" states
   py:run "states = np.array(states, dtype=np.float32)"
+  py:run "states = np.where(np.isfinite(states), states, 0.0)"
+  py:run "std = np.std(states, axis=0)"
+  py:run "std = np.where(std == 0, 1.0, std)"
+  py:run "states = (states - np.mean(states, axis=0)) / std"
   py:run "q_dist = Q1(states, training=True)"
   py:run "q_values = np.sum(q_dist * support, axis=-1)"
   py:run "actions = np.argmax(q_values, axis=-1).tolist()"
   let actions py:runresult "actions"
-  let active-cars-list sort active-cars
-  (foreach active-cars-list actions [[c a] -> ask c [ set action a ]])
+  let car-ids map [c -> [who] of c] active-cars-list
+  (foreach car-ids actions [[id a] ->
+    ask cars with [who = id] [
+      set action a
+    ]
+  ])
 
-  ;; 3. Thực hiện hành động
-  ask cars [
+  ;; 3. Thực hiện hành động và cập nhật trạng thái
+  ask active-cars [
+    handle-blocking-cars
     move-forward-rl
-    set next-state map [f -> runresult f] state-env
-    set is-done (ticks >= max-episode-length)
+    let current-reward get-reward
+    add-to-replay-buffer action current-reward
   ]
 
   ;; 4. Lưu trải nghiệm n-step
   ask active-cars [
-    set reward get-reward-rainbow  ; Sử dụng hàm riêng cho Rainbow DQN
-    set n-step-buffer lput (list state action reward next-state is-done) n-step-buffer
-    if length n-step-buffer >= n-step or is-done [
-      let start_item item 0 n-step-buffer
-      let end_item item (length n-step-buffer - 1) n-step-buffer
-      let state0 item 0 start_item
-      let action0 item 1 start_item
+    set reward get-reward
+    let current-state get-current-state
+    let next-state-value get-next-state
+    let done is-terminal-state
+    if not is-list? current-state or not is-list? next-state-value [
+      show (word "Lỗi: trạng thái không hợp lệ cho xe " who)
+      set current-state n-values length state-env [0]
+      set next-state-value n-values length state-env [0]
+    ]
+    if length current-state != length state-env or length next-state-value != length state-env [
+      show (word "Lỗi: Kích thước trạng thái không khớp cho xe " who)
+      set current-state n-values length state-env [0]
+      set next-state-value n-values length state-env [0]
+    ]
+    set n-step-buffer lput (list current-state action reward next-state-value done) n-step-buffer
+    if length n-step-buffer >= n-step or done [
+      if length n-step-buffer < 1 [
+        show (word "Lỗi: n-step-buffer rỗng cho xe " who)
+        stop
+      ]
+      let start-item item 0 n-step-buffer
+      let end-item item (length n-step-buffer - 1) n-step-buffer
+      let state0 item 0 start-item
+      let action0 item 1 start-item
       let reward0 0
       let discount 1
       foreach n-step-buffer [
-        t -> set reward0 reward0 + (item 2 t) * discount
-             set discount discount * gamma
+        [t] ->
+        let t-reward item 2 t
+        if is-number? t-reward [
+          set reward0 reward0 + t-reward * discount
+          set discount discount * gamma
+        ]
       ]
-      let next-state0 item 3 end_item
-      let done0 item 4 end_item
-
-      if not is-list? state0 [
-        show (word "Error: state0 is not a list for car " who ": " state0)
+      let next-state0 item 3 end-item
+      let done0 item 4 end-item
+      if not is-list? state0 or not is-list? next-state0 or not is-number? reward0 or not is-boolean? done0 [
+        show (word "Lỗi: dữ liệu n-step không hợp lệ cho xe " who)
         stop
       ]
-      if not is-list? next-state0 [
-        show (word "Error: next-state0 is not a list for car " who ": " next-state0)
-        stop
-      ]
-      if not is-number? reward0 [
-        show (word "Error: reward0 is not a number for car " who ": " reward0)
-        stop
-      ]
-      if not is-boolean? done0 [
-        show (word "Error: done0 is not a boolean for car " who ": " done0)
-        stop
-      ]
-
       py:set "state0" state0
       py:set "action0" action0
       py:set "reward0" reward0
       py:set "next_state0" next-state0
       py:set "done0" done0
       py:run "add_experience(state0, action0, reward0, next_state0, done0, reward0)"
-      show (word "Replay buffer size: " py:runresult "replay_buffer.size")
-      ifelse is-done [ set n-step-buffer [] ] [ set n-step-buffer but-first n-step-buffer ]
+      ifelse done0 [set n-step-buffer []] [set n-step-buffer but-first n-step-buffer]
     ]
   ]
 
-  ;; 5. Huấn luyện
-  if num-atoms <= 0 [
-    show (word "Error: num-atoms must be positive, current value: " num-atoms)
+  ;; 5. Huấn luyện mô hình
+  if py:runresult "replay_buffer.size" < warmup-steps [  ; Sử dụng replay_buffer.size từ Python
+    tick
     stop
   ]
-  let loss py:runresult "train()"
-  show (word "Loss: " loss)
+  if ticks mod training-frequency = 0 [
+    (py:run
+      "import time"
+      "start_time = time.time()"
+      "loss = train()"
+      "epoch_time = (time.time() - start_time) * 1000"
+      "print(f'1/1 - 0s - {int(epoch_time)}ms/epoch - {int(epoch_time)}ms/step')"
+    )
+    let loss py:runresult "loss"
+    show (word "Loss: " loss)
+  ]
+
   tick
 end
-
 ;; go for Deep Q-Learning, Deep Q-Network and Double Deep Q-Network
 to go-approximate-algos
   ; get current state for all cars
@@ -1267,92 +1328,156 @@ to move-forward-greedy ; car procedure
 end
 
 ;; forward car according rl algorithms
-to move-forward-rl ; car procedure
+to move-forward-rl
   ifelse speed > 0 [
     ifelse (prob-damaged-car <= random-float 1) [
-      ;ifelse (member? pycor car-lanes-left) [ set heading 90 ][ set heading 270 ]
       if (pycor < 0) [ set heading 90 ]
       if (pycor > 0) [ set heading 270 ]
 
-      if action = 0 [ speed-up-car set color green ]   ; 0 = accelerate, green
-      if action = 1 [ set color yellow ]               ; 1 = stay same, yellow
-      if action = 2 [ slow-down-car set color violet]  ; 2 = decelerate, violet
-      if action = 3 [                                  ; 3 = change lane, blue
-        choose-new-lane
-        set color blue
-        if ycor != target-lane [
-          move-to-target-lane
+      let dist-ahead 9999
+      let target-car get-car-ahead
+      if is-agent? target-car [
+        set dist-ahead get-distance-to-car target-car
+      ]
+
+      let safe-distance (1.5 * collision-distance + speed * 0.5)  ; Đồng bộ với get-reward
+
+      ifelse dist-ahead < collision-distance [
+        set color red  ; Va chạm
+      ] [
+        ifelse dist-ahead < safe-distance [
+          if action = 0 [ speed-up-car set color green ]   ; Tăng tốc gần xe
+          if action = 1 [ set color yellow ]               ; Giữ tốc độ gần xe
+          if action = 2 [ slow-down-car set color violet ] ; Giảm tốc gần xe
+          if action = 3 [                                  ; Đổi làn
+            choose-new-lane
+            ifelse (count other cars in-radius collision-distance) = 0 and ycor != target-lane [
+              set color blue
+            ] [
+              set color red
+            ]
+            if ycor != target-lane [ move-to-target-lane ]
+          ]
+        ] [
+          if action = 0 [ speed-up-car set color green ]   ; Tăng tốc an toàn
+          if action = 1 [ set color yellow ]               ; Giữ tốc độ an toàn
+          if action = 2 [ slow-down-car set color violet ] ; Giảm tốc khi không cần
+          if action = 3 [                                  ; Đổi làn
+            choose-new-lane
+            ifelse (count other cars in-radius collision-distance) = 0 and ycor != target-lane [
+              set color blue
+            ] [
+              set color red
+            ]
+            if ycor != target-lane [ move-to-target-lane ]
+          ]
         ]
       ]
 
       handle-blocking-cars
-
       forward speed * speed-ratio
-
       set reward get-reward
-
       set nb-collisions (nb-collisions + count other cars in-radius collision-distance)
-    ][
-      if (damaged-nb-cars-inlane < max-damaged-cars) [ ; this car will stop
+    ] [
+      if (damaged-nb-cars-inlane < max-damaged-cars) [
         set speed 0
         set color damaged-color
         set damaged-inlane-duration 1
         set damaged-nb-cars-inlane (damaged-nb-cars-inlane + 1)
       ]
     ]
-  ][
-    ; for car with speed = 0
+  ] [
     handle-damaged-car
   ]
 end
-
 ;; car procedure, get reward
 to-report get-reward
-  ifelse get-distance-to-car get-car-ahead < collision-distance ; a collission
-  [
-    report -100  ; if having a collision: -100
-  ][
-    ; if having a hard-brake: -10
-    if action = 0 [ report 3 ]  ; 0 = accelerate
-    if action = 1 [ report 1 ]  ; 1 = stay same
-    if action = 2 [ report -1 ] ; 2 = decelerate
-    if action = 3 [ report -2 ] ; 3 = change lane
-
-    report 0
+  let dist-ahead get-distance-to-car get-car-ahead
+  ifelse dist-ahead < collision-distance [  ; Giữ điều kiện va chạm
+    report -50  ; Tăng từ -1 lên -50, gần với -100 của phiên bản ban đầu
+  ] [
+    let safe-distance (1.5 * collision-distance + speed * 0.5)  ; Nới lỏng
+    ifelse dist-ahead < safe-distance [  ; Điều kiện đơn giản hơn
+      if action = 0 [ report -5 ]   ; Tăng tốc gần xe: -5 (tương tự -0.2)
+      if action = 1 [ report -2 ]   ; Giữ tốc độ gần xe: -2 (tương tự -0.1)
+      if action = 2 [ report 5 ]    ; Giảm tốc gần xe: +5 (tương tự 0.6)
+      if action = 3 [               ; Đổi làn
+        ifelse (count other cars in-radius collision-distance) = 0 and ycor != target-lane [
+          report 10  ; Đổi làn an toàn: +10 (tương tự 0.7)
+        ] [
+          report -5  ; Đổi làn không an toàn: -5 (tương tự -0.2)
+        ]
+      ]
+    ] [
+      if action = 0 [ report 10 ]   ; Tăng tốc an toàn: +10 (tương tự 0.3)
+      if action = 1 [ report 5 ]    ; Giữ tốc độ an toàn: +5 (tương tự 0.5/0.3)
+      if action = 2 [ report -2 ]   ; Giảm tốc khi không cần: -2 (tương tự -0.1)
+      if action = 3 [               ; Đổi làn
+        ifelse (count other cars in-radius collision-distance) = 0 and ycor != target-lane [
+          report 10  ; Đổi làn an toàn: +10
+        ] [
+          report -5  ; Đổi làn không an toàn: -5
+        ]
+      ]
+    ]
+    report 0.1  ; Thay report 0 để tránh nhánh mặc định
   ]
-
-
-
-  ;report speed + (patience-top - patience) / patience-top
-  ;report (log (speed + 1e-8) 2) + (log ((patience - patience-current) / patience + 1e-8) 2) ; reward can be positive or negative
-  ;set reward (log (speed + (max-patience - patience) / max-patience + 1e-8) 2) ; reward can be positive or negative
 end
+
 
 
 ;; handle blocking cars
 to handle-blocking-cars ; car procedure
-  ;let blocking-y-cars other cars in-cone (observation-distance + speed) observation-angle with [ get-x-distance <= observation-distance ]
-  ;set observation-distance get-safe-distance
-  let blocking-cars other cars in-cone observation-distance observation-angle
+  let blocking-cars other cars in-cone (observation-distance + speed * 3) observation-angle
   let blocking-car-nearest min-one-of blocking-cars [ distance myself ]
-  if blocking-car-nearest != nobody [
+  ifelse blocking-car-nearest != nobody [
+    let dist-ahead 9999
+    carefully [
+      set dist-ahead get-distance-to-car blocking-car-nearest
+    ] [
+      show (word "Error in get-distance-to-car for car " who ": " error-message)
+      set dist-ahead 9999
+    ]
+
+    let safe-dist (1.0 * collision-distance + speed * 0.5)
     ifelse [ speed ] of blocking-car-nearest > 0 [
-      ;while [speed >= ([ speed ] of blocking-y-car)] [slow-down-car]
-      set speed [ speed ] of blocking-car-nearest ; match the speed of the car ahead of you and then slow down so you are driving a bit slower than that car.
-      slow-down-car
-    ][  ; if blocking-car-nearest is a damaged car, with speed = 0
-      while [speed > speed-sudden-stop] [slow-down-car]
-      ; set speed speed-sudden-stop
-      while [ycor = target-lane] [
-        choose-new-lane
-        if ycor != target-lane [
-          move-to-target-lane
+      ifelse dist-ahead < safe-dist * 0.8 [
+        set speed [ speed ] of blocking-car-nearest
+        slow-down-car
+        set action 2
+      ] [
+        ifelse random-float 1 < 0.3 [  ; 30% cơ hội tăng tốc
+          speed-up-car
+          set action 0
+        ] [
+          ifelse dist-ahead > safe-dist * 1.5 [
+            set action 1
+          ] [
+            ifelse random-float 1 < 0.5 and (count other cars in-radius (collision-distance * 2.0)) = 0 [  ; 50% cơ hội đổi làn
+              set action 3
+            ] [
+              set action 2  ; Ưu tiên giảm tốc
+            ]
+          ]
         ]
       ]
+    ] [
+      while [speed > speed-sudden-stop] [slow-down-car]
+      while [ycor = target-lane] [
+        choose-new-lane
+        if ycor != target-lane [ move-to-target-lane ]
+      ]
+      set action 2
+    ]
+  ] [
+    ifelse random-float 1 < 0.5 [  ; 50% cơ hội tăng tốc khi không có xe cản
+      speed-up-car
+      set action 0
+    ] [
+      set action 1  ; 50% cơ hội giữ nguyên
     ]
   ]
 end
-
 ;; handle the damaged cars, with speed = 0
 to handle-damaged-car ; car procedure
   if (dynamic-situation?) [
@@ -1392,23 +1517,23 @@ to handle-damaged-car ; car procedure
     ]
   ]
 end
-
 ;; decrease the value of speed and patience
 to slow-down-car ; car procedure
   if speed > deceleration [
-    set speed speed - deceleration
-    if speed < speed-min [ set speed speed-min ]
-    set patience patience - 1 ; every time you hit the brakes, you loose a little patience
+    set speed speed - 0.05  ; Giảm deceleration xuống 0.05
+    if speed < 0.2 [ set speed 0.2 ]  ; Tăng speed-min lên 0.2
+    set patience patience - 1
     if patience < 0 [set patience 0]
   ]
 end
 
+
 ;; increase the value of speed and patience
 to speed-up-car ; car procedure
-  set speed speed + acceleration
+  set speed speed + 0.5  ; Tăng acceleration lên 0.5
   if speed > speed-top [ set speed speed-top ]
-  ;set patience patience + 1
-  ;if patience > max-patience [set patience max-patience]
+  set patience patience + 1
+  if patience > max-patience [set patience max-patience]
 end
 
 ;; convert a state to an integer value
@@ -1418,18 +1543,17 @@ to-report convert-state-int [ aState ]
 end
 
 to create-or-remove-cars
-  ; make sure we don't have too many cars for the room we have on the road
   let car-road-patches patches with [ member? pycor car-lanes ]
   if number-of-cars > count car-road-patches [
     set number-of-cars count car-road-patches
   ]
 
-  let car-speed-seed 0.75
+  let car-speed-seed 1.0  ; Tăng khởi tạo tốc độ lên 1.0
 
   create-cars (number-of-cars - count cars) [
-    set size 1.0 ;0.9
+    set size 1.0
     set color get-car-default-color self
-    move-to one-of free-car car-road-patches
+    move-to one-of free-car car-road-patches with [ distance myself > 2.0 * collision-distance ]  ; Đảm bảo khoảng cách ban đầu
     set target-lane pycor
     set shape "car-top"
     ifelse (member? pycor car-lanes-left) [
@@ -1438,7 +1562,7 @@ to create-or-remove-cars
       set heading 270
     ]
     set speed car-speed-seed + random-float (speed-max - car-speed-seed)
-    set speed-top  speed-max ;(2 * speed + random-float (speed-max - 2 * speed)) ;(speed-max / 2) + random-float (speed-max / 2)
+    set speed-top speed-max
     set patience (max-patience / 2) + random (max-patience / 2)
     set damaged-inlane-duration 0
     set damaged-inrescue-duration 0
@@ -1458,6 +1582,7 @@ to-report free-car [ car-road-patches ] ; car procedure
     not any? cars-here with [ self != this-car ]
   ]
 end
+
 
 to draw-road
   ask patches [
@@ -1704,78 +1829,113 @@ to-report get-car-behind
   ;]
 
 end
-to-report get-reward-rainbow
-  let r 0
-  let dist-ahead 9999
-  let safe-distance 2 * collision-distance
-  let target-car nobody
+to-report get-next-state
+  let valid-speed ifelse-value is-valid-number? speed [speed] [0]
+  let valid-heading ifelse-value is-valid-number? heading [heading] [90]  ; Dù không sử dụng, giữ để nhất quán
 
-  carefully [
-    set target-car get-car-ahead
-  ][
-    show (word "Error in get-car-ahead for car " who ": " error-message)
-    set target-car nobody
+  let car-ahead get-car-ahead
+  let car-behind get-car-behind
+  set state (list
+    valid-speed
+    (ifelse-value is-valid-number? (get-distance-to-car car-ahead) [get-distance-to-car car-ahead] [observation-max])
+    (ifelse-value is-valid-number? (get-speed-to-car car-ahead) [get-speed-to-car car-ahead] [0])
+    (ifelse-value is-valid-number? (get-distance-to-car car-behind) [get-distance-to-car car-behind] [observation-max])
+    (ifelse-value is-valid-number? (get-speed-to-car car-behind) [get-speed-to-car car-behind] [0])
+  )
+
+  if is-boolean? input-exp? and input-exp? [
+    set state lput (ifelse-value is-valid-number? get-epsilon [get-epsilon] [0]) state
+  ]
+  if is-boolean? input-time? and input-time? [
+    set state lput (ifelse-value is-valid-number? ticks [ticks] [0]) state
   ]
 
-  carefully [
-    if is-agent? target-car [
-      set dist-ahead get-distance-to-car target-car
-    ]
-  ][
-    show (word "Error in get-distance-to-car for car " who ": " error-message)
-    set dist-ahead 9999
+  if not is-list? state or length state != length state-env [
+    show (word "Lỗi: get-next-state không trả về danh sách hợp lệ cho xe " who ": " state)
+    report n-values (length state-env) [0]  ; Sử dụng độ dài của state-env
+  ]
+  report state
+end
+
+to-report is-valid-number? [value]
+  report is-number? value and value != "NaN" and value != "inf" and value != "-inf"
+end
+
+to-report get-current-state
+  let car-ahead get-car-ahead
+  let car-behind get-car-behind
+  set state (list
+    (ifelse-value is-valid-number? speed [speed] [0])
+    (ifelse-value is-valid-number? (get-distance-to-car car-ahead) [get-distance-to-car car-ahead] [observation-max])
+    (ifelse-value is-valid-number? (get-speed-to-car car-ahead) [get-speed-to-car car-ahead] [0])
+    (ifelse-value is-valid-number? (get-distance-to-car car-behind) [get-distance-to-car car-behind] [observation-max])
+    (ifelse-value is-valid-number? (get-speed-to-car car-behind) [get-speed-to-car car-behind] [0])
+  )
+  if is-boolean? input-exp? and input-exp? [
+    set state lput (ifelse-value is-valid-number? get-epsilon [get-epsilon] [0]) state
+  ]
+  if is-boolean? input-time? and input-time? [
+    set state lput (ifelse-value is-valid-number? ticks [ticks] [0]) state
+  ]
+  if not is-list? state or length state != length state-env [
+    show (word "Lỗi: get-current-state không trả về danh sách hợp lệ cho xe " who ": " state)
+    report n-values (length state-env) [0]  ; Sử dụng độ dài của state-env
+  ]
+  report state
+end
+to-report is-valid-state? [input-state]
+  let expected-length length state-env
+  report is-list? input-state and length input-state = expected-length
+end
+to-report is-terminal-state
+  if not is-turtle? self or breed != cars [
+    report false
+  ]
+  let car-ahead get-car-ahead
+  let distance-ahead observation-max
+  if car-ahead != nobody [
+    set distance-ahead get-distance-to-car car-ahead
+  ]
+  let valid-speed ifelse-value is-valid-number? speed [speed] [0]
+  let safe-distance (1.2 * (ifelse-value is-number? collision-distance [collision-distance] [1.0]) + valid-speed * 0.5)
+  let result (valid-speed <= 0 or distance-ahead <= (ifelse-value is-number? collision-distance [collision-distance] [1.0]) or distance-ahead < safe-distance)
+  set is-done result
+  report result
+end
+
+to add-to-replay-buffer [act rew]
+  ; Đảm bảo chạy trong ngữ cảnh xe
+  if not is-turtle? self or breed != cars [
+    show (word "Lỗi: add-to-replay-buffer được gọi từ tác nhân không phải xe: " self)
+    stop
   ]
 
-  ifelse dist-ahead < collision-distance [
-    set r -100  ; Tăng phạt va chạm mạnh hơn
-    show (word "Collision detected for car " who)
-  ][
-    ifelse is-number? action [
-      ifelse action = 0 [
-        set r 2
-      ][
-        if action = 1 [ set r 1 ]
-        if action = 2 [ set r -5 ]  ; Phạt nặng khi giảm tốc
-        if action = 3 [
-          ifelse (count other cars in-radius collision-distance) = 0 and ycor != [ycor] of self [
-            set r 10  ; Thưởng cao khi đổi làn thành công
-            show (word "Lane change success for car " who)
-          ][
-            set r -10  ; Phạt nặng khi đổi làn thất bại
-            show (word "Lane change failed for car " who)
-          ]
-        ]
-      ]
-    ][
-      show (word "Warning: action not defined for car " who)
-    ]
+  let current-state get-current-state
+  let next-state-value get-next-state
 
-    if dist-ahead < safe-distance [
-      set r (r - (safe-distance - dist-ahead) * 1.0)  ; Tăng phạt khoảng cách mạnh hơn
-      show (word "Too close for car " who ": distance " dist-ahead)
-    ]
-
-    carefully [
-      ifelse is-number? speed [
-        if speed <= 0 [ set r (r - 20) ]  ; Phạt rất nặng khi dừng
-        ifelse is-number? speed-max [
-          if speed > speed-max[ set r (r - 20) ]
-        ][
-          show (word "Warning: max-speed not defined for car " who)
-          set speed-max 1.0
-          if speed > speed-max [ set r (r - 20) ]
-        ]
-      ][
-        show (word "Warning: speed not defined for car " who ": setting r to -2")
-        set r (r - 2)
-      ]
-    ][
-      show (word "Error processing speed for car " who ": " error-message)
-      set r (r - 2)
-    ]
+  ; Kiểm tra tính hợp lệ của trạng thái
+  if not is-list? current-state or length current-state != length state-env [
+    show (word "Lỗi: current-state không hợp lệ cho xe " who ": " current-state)
+    set current-state n-values (length state-env) [0]
   ]
-  show (word "Car " who " reward (Rainbow): " r " | Speed: " speed " | Dist Ahead: " dist-ahead)
-  report r
+  if not is-list? next-state-value or length next-state-value != length state-env [
+    show (word "Lỗi: next-state-value không hợp lệ cho xe " who ": " next-state-value)
+    set next-state-value n-values (length state-env) [0]
+  ]
+
+  ; Lấy trạng thái done từ is-terminal-state
+  let done is-terminal-state
+
+  ; Truyền dữ liệu sang Python để thêm vào bộ đệm phát lại
+  py:set "state" current-state
+  py:set "action" act
+  py:set "reward" rew
+  py:set "next_state" next-state-value
+  py:set "done" done
+  py:run "add_experience(state, action, reward, next_state, done, reward)"
+
+  ; Cập nhật kích thước bộ đệm phát lại
+  set replay-buffer-size py:runresult "replay_buffer.size"
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
