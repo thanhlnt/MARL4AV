@@ -520,7 +520,6 @@ to setup-rainbow
     "      print(f'Trạng thái tiếp theo không hợp lệ tại chỉ số {i}: {next_state}')"
     "      next_states[i] = np.zeros(input_state_size, dtype=np.float32)"
     "  loss, priorities = compute_loss(states, actions, rewards, next_states, dones, weights, n_step_rewards)"
-    "  print('loss:', loss.numpy())"
     "  replay_buffer.update_priorities(indices, priorities.numpy() + 1e-6)"
     "  if update_steps > 0 and step % update_steps == 0:"
     "    Q2.set_weights(Q1.get_weights())"
@@ -944,12 +943,12 @@ to go-rainbow
     (py:run
       "import time"
       "start_time = time.time()"
-      "loss = train()"
+      "loss = train()"  ;; Không gửi giá trị loss về NetLogo
       "epoch_time = (time.time() - start_time) * 1000"
       "print(f'1/1 - 0s - {int(epoch_time)}ms/epoch - {int(epoch_time)}ms/step')"
     )
-    let loss py:runresult "loss"
-    show (word "Loss: " loss)
+    ;; Bỏ dòng này để không in loss:
+    ;; let loss py:runresult "loss"
   ]
 
   tick
@@ -2053,7 +2052,7 @@ number-of-cars
 number-of-cars
 1
 nb-cars-max
-111.0
+112.0
 1
 1
 NIL
@@ -2206,7 +2205,7 @@ max-patience
 max-patience
 10
 100
-50.0
+42.0
 1
 1
 NIL
@@ -2220,7 +2219,7 @@ CHOOSER
 driving-policy
 driving-policy
 "================Rule-based Policy================" "Greedy" "Greedy-CL" "-----------------------------------------------" "Nagel-Schreckenberg" "Intelligent-Driver-Model" "Mobile Policy" "================RL-based Policy==================" "Q-Learning" "SARSA" "Double Q-Learning" "N-step Q-Learning" "N-step SARSA" "Soft Q-Learning" "Implicit Q-Learning" "-----------------------------------------------" "Deep Q-Learning" "Deep Q-Network" "Double Deep Q-Learning" "Double Deep Q-Network" "Duel Deep Q-Network" "Categorical DQN" "DuelingNet" "NoisyNet" "Prioritized Experience Replay" "Prioritized ER DQN" "Deep Recurrent Q-Network" "Rainbow" "----------------------Policy Gradient-------------------------" "Reinforce" "Naive Actor-Critic" "Advantage Actor-Critic" "Asynchronous Advantage Actor-Critic" "Soft Actor-Critic" "Proximal Policy Optimization" "Trust Region Policy Optimization" "Deep Deterministic Policy Gradient" "Twin Delayed Deep Deterministic Policy Gradient" "DDPG from Demonstration (DDPGfD)" "Behavior Cloning (with DDPG)"
-17
+27
 
 SLIDER
 130
@@ -2231,7 +2230,7 @@ number-of-lanes-way
 number-of-lanes-way
 1
 5
-5.0
+4.0
 1
 1
 NIL
@@ -2261,7 +2260,7 @@ exp-decay
 exp-decay
 0
 0.1
-0.001
+0.0
 0.001
 1
 NIL
@@ -2435,7 +2434,7 @@ batch-size
 batch-size
 0
 1024
-128.0
+32.0
 32
 1
 NIL
@@ -2450,7 +2449,7 @@ memory-size
 memory-size
 100000
 10000000
-100000.0
+2000.0
 1000
 1
 NIL
@@ -2474,7 +2473,7 @@ SWITCH
 463
 input-time?
 input-time?
-0
+1
 1
 -1000
 
@@ -2487,7 +2486,7 @@ max-damaged-cars
 max-damaged-cars
 0
 5
-4.0
+3.0
 1
 1
 NIL
@@ -2502,7 +2501,7 @@ simulation-steps
 simulation-steps
 100
 100000
-100000.0
+2100.0
 1000
 1
 NIL
@@ -4374,6 +4373,219 @@ NetLogo 6.4.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="deceleration">
       <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="rainbow1" repetitions="3" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="1.0E-4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="2000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="32"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Rainbow&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="2000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="42"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="112"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="scenario">
+      <value value="&quot;Two-way Expressway&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="dqn1" repetitions="3" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="1.0E-4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="2000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="32"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Deep Q-Network&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="2000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="42"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="112"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="scenario">
+      <value value="&quot;Two-way Expressway&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="learning-rate">
+      <value value="0.0034"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="rainbow2" repetitions="3" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>mean [ speed ] of cars with [speed &gt; 0]</metric>
+    <metric>mean [reward] of cars with [speed &gt; 0]</metric>
+    <metric>nb-collisions</metric>
+    <metric>timer</metric>
+    <enumeratedValueSet variable="input-time?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-decay">
+      <value value="3.333333E-5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="dynamic-situation?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-damaged-cars">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="discount-factor">
+      <value value="0.98"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="acceleration">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="exp-rate">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-lanes-way">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="clip_param">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="simulation-steps">
+      <value value="2000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="save-experience?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="input-exp?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="batch-size">
+      <value value="32"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="driving-policy">
+      <value value="&quot;Rainbow&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="memory-size">
+      <value value="2000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-patience">
+      <value value="42"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="multiple-workers?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number-of-cars">
+      <value value="112"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="deceleration">
+      <value value="0.02"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="scenario">
+      <value value="&quot;Two-way Expressway&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="learning-rate">
       <value value="0.0034"/>
