@@ -840,17 +840,14 @@ to go-rainbow
   ask cars with [speed > 0] [
     set state map [f -> ifelse-value is-number? runresult f [runresult f] [0]] state-env
     if not is-list? state [
-      show (word "Lỗi: Trạng thái không phải danh sách cho xe " who ": " state)
       set state n-values length state-env [0]  ; Sửa thành độ dài động dựa trên state-env
     ]
     if length state != length state-env [
-      show (word "Lỗi: Kích thước trạng thái không khớp cho xe " who ": " length state " != " length state-env)
       set state n-values length state-env [0]
     ]
   ]
   let active-cars cars with [speed > 0 and is-list? state and length state = length state-env]
   if not any? active-cars [
-    show "Không có xe hoạt động, dừng mô phỏng."
     stop
   ]
 
@@ -889,19 +886,16 @@ to go-rainbow
     let next-state-value get-next-state
     let done is-terminal-state
     if not is-list? current-state or not is-list? next-state-value [
-      show (word "Lỗi: trạng thái không hợp lệ cho xe " who)
       set current-state n-values length state-env [0]
       set next-state-value n-values length state-env [0]
     ]
     if length current-state != length state-env or length next-state-value != length state-env [
-      show (word "Lỗi: Kích thước trạng thái không khớp cho xe " who)
       set current-state n-values length state-env [0]
       set next-state-value n-values length state-env [0]
     ]
     set n-step-buffer lput (list current-state action reward next-state-value done) n-step-buffer
     if length n-step-buffer >= n-step or done [
       if length n-step-buffer < 1 [
-        show (word "Lỗi: n-step-buffer rỗng cho xe " who)
         stop
       ]
       let start-item item 0 n-step-buffer
@@ -921,7 +915,6 @@ to go-rainbow
       let next-state0 item 3 end-item
       let done0 item 4 end-item
       if not is-list? state0 or not is-list? next-state0 or not is-number? reward0 or not is-boolean? done0 [
-        show (word "Lỗi: dữ liệu n-step không hợp lệ cho xe " who)
         stop
       ]
       py:set "state0" state0
@@ -943,12 +936,10 @@ to go-rainbow
     (py:run
       "import time"
       "start_time = time.time()"
-      "loss = train()"  ;; Không gửi giá trị loss về NetLogo
+      "loss = train()"
       "epoch_time = (time.time() - start_time) * 1000"
       "print(f'1/1 - 0s - {int(epoch_time)}ms/epoch - {int(epoch_time)}ms/step')"
     )
-    ;; Bỏ dòng này để không in loss:
-    ;; let loss py:runresult "loss"
   ]
 
   tick
