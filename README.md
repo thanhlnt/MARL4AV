@@ -15,7 +15,7 @@ The testbed has been tested with the following configuration, especially for Dee
 <p align="center"> <img src="https://github.com/user-attachments/assets/a42faf61-05fe-4b87-8503-0f535fd948c5" class="center" width="300" height="200"> </p>
 
 **Publication** (draft version):
-- A lightweight and user-friendly multi-agent reinforcement learning testbed for driving policies of autonomous vehicles on expressways. https://drive.google.com/file/d/1LmN8ld_RFPThecegJLm0OtTMaT74nrCg/view?usp=drive_link.
+- A lightweight and user-friendly multi-agent reinforcement learning testbed for driving policies of autonomous vehicles on expressways.
 
  **References:**
  1. Jeremy, B., Bryan, H., James, H., Robert J., Aaron, B., Ewout ter Hoeven, Igor, N. (2017-2024). _Python extension of NetLogo_. https://github.com/NetLogo/Python-Extension
