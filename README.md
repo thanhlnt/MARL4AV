@@ -4,7 +4,7 @@
  It is useful for researchers to study the traffic congestion reduction problem on highways or in urban areas. It can be used to test new RL algorithms.
 
  The 3D View of the testbed, for highways, is shown in the following picture.
-<p align="center"> <img src="https://github.com/user-attachments/assets/7bd1751e-66b0-4bd1-9968-5888a9cb6eb9" class="center" width="800" height="600"> </p>
+<p align="center"> <img src="https://github.com/user-attachments/assets/7bd1751e-66b0-4bd1-9968-5888a9cb6eb9" class="center" width="600" height="400"> </p>
 
 **Features:** <br />
 The testbed has current following features:
@@ -12,7 +12,7 @@ The testbed has current following features:
 - Driving policy: _Greedy, Q-Learning, Double Q-Learning, SARSA, Deep Q-Network, Double Deep Q-Network_. Other RL driving policies are planned for future development or under review.
 
 The testbed has been tested with the following configuration, especially for Deep RL algorithms <br />
-<p align="center"> <img src="https://github.com/user-attachments/assets/a42faf61-05fe-4b87-8503-0f535fd948c5" class="center" width="500" height="400"> </p>
+<p align="center"> <img src="https://github.com/user-attachments/assets/a42faf61-05fe-4b87-8503-0f535fd948c5" class="center" width="800" height="600"> </p>
 
 **Publication** (draft version):
 - A lightweight and user-friendly multi-agent reinforcement learning testbed for driving policies of autonomous vehicles on expressways.
