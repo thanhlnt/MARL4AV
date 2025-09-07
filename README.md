@@ -12,7 +12,7 @@ The testbed has current following features:
 - Driving policy: _Greedy, Q-Learning, Double Q-Learning, SARSA, Deep Q-Network, Double Deep Q-Network_. Other RL driving policies are planned for future development or under review.
 
 The testbed has been tested with the following configuration, especially for Deep RL algorithms <br />
-<p align="center"> <img src="https://github.com/user-attachments/assets/a42faf61-05fe-4b87-8503-0f535fd948c5" class="center" width="300" height="200"> </p>
+<p align="center"> <img src="https://github.com/user-attachments/assets/a42faf61-05fe-4b87-8503-0f535fd948c5" class="center" width="500" height="400"> </p>
 
 **Publication** (draft version):
 - A lightweight and user-friendly multi-agent reinforcement learning testbed for driving policies of autonomous vehicles on expressways.
